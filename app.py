@@ -1842,7 +1842,64 @@ def get_student_group_name(short_code):
             response_parts.append("• **Focus**: Academic language development and ELPAC preparation")
     
     return "\n".join(response_parts) if response_parts else f"Found {len(results)} schools. Check the detailed results below for specific performance data."
+# UPDATE your generate_ai_analysis function in app.py:
+
 def generate_ai_analysis(user_query: str, results: List[Dict], parsed_query: Dict) -> str:
+    """Use Gemini to generate intelligent analysis of the results"""
+    
+    # Prepare data summary for AI
+    data_summary = []
+    for school in results[:5]:  # Limit to avoid token limits
+        school_summary = {
+            "school_name": school.get("school_name", "Unknown"),
+            "district_name": school.get("district_name", "Unknown"),
+            "overall_performance": school.get("dashboard_indicators", {}),
+            "student_groups": {}
+        }
+        
+        # Add relevant student group data
+        target_groups = parsed_query.get("student_groups", ["ALL"])
+        if not target_groups:
+            target_groups = ["ALL"]
+            
+        for group in target_groups:
+            if group in school.get("student_groups", {}):
+                school_summary["student_groups"][group] = school["student_groups"][group]
+        
+        data_summary.append(school_summary)
+    
+    # IMPROVED PROMPT with better formatting instructions
+    analysis_prompt = f"""
+You are an expert California School Dashboard analyst. Analyze this school performance data and provide actionable insights.
+
+USER QUERY: {user_query}
+
+SCHOOL DATA: {json.dumps(data_summary, indent=2)}
+
+ANALYSIS CONTEXT:
+- chronic_absenteeism: % of students absent 10%+ days (LOWER is better)
+- ela_performance: Points above/below standard (HIGHER is better)  
+- math_performance: Points above/below standard (HIGHER is better)
+- Red = Most concerning, Orange = Below average, Yellow = Average, Green = Above average, Blue = Best
+
+FORMATTING REQUIREMENTS:
+1. Start with a clear, direct answer to the user's question
+2. Use short paragraphs (2-3 sentences max)
+3. Use bullet points for lists
+4. Use **bold** for school names and key metrics
+5. Include specific data points with school names
+6. Keep the response under 300 words
+7. Structure: Direct Answer → Key Findings → Recommendations
+
+Provide a comprehensive but CONCISE analysis that directly answers the question with specific data points and actionable recommendations.
+"""
+
+    try:
+        response = model.generate_content(analysis_prompt)
+        return response.text.strip()
+    except Exception as e:
+        print(f"AI analysis failed: {e}")
+        return None
     """Use Gemini to generate intelligent analysis of the results"""
     
     # Prepare data summary for AI
@@ -2093,14 +2150,44 @@ HTML_TEMPLATE = '''
            }
        }
        
-       function addMessage(text, sender) {
-           const container = document.getElementById('chatContainer');
-           const message = document.createElement('div');
-           message.className = `message ${sender}-message`;
-           message.innerHTML = `<span>${text}</span>`;
-           container.appendChild(message);
-           container.scrollTop = container.scrollHeight;
-       }
+       // UPDATE your addMessage function in the HTML template:
+
+function addMessage(text, sender) {
+    const container = document.getElementById('chatContainer');
+    const message = document.createElement('div');
+    message.className = `message ${sender}-message`;
+    
+    // Format the AI response for better readability
+    if (sender === 'ai') {
+        // Convert markdown-style formatting to HTML
+        let formattedText = text
+            // Convert **bold** to <strong>
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            // Convert * bullet points to HTML lists
+            .replace(/^\* (.*$)/gim, '<li>$1</li>')
+            // Wrap consecutive <li> items in <ul>
+            .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+            // Fix nested lists
+            .replace(/<\/ul>\s*<ul>/g, '')
+            // Add line breaks for ## headers
+            .replace(/^## (.*$)/gim, '<h3 style="color: #1976d2; margin-top: 20px; margin-bottom: 10px;">$1</h3>')
+            // Add line breaks for ### headers  
+            .replace(/^### (.*$)/gim, '<h4 style="color: #333; margin-top: 15px; margin-bottom: 8px;">$1</h4>')
+            // Convert double line breaks to paragraphs
+            .replace(/\n\n/g, '</p><p>')
+            // Wrap in paragraph tags
+            .replace(/^(.*)$/gim, '<p>$1</p>')
+            // Clean up empty paragraphs
+            .replace(/<p><\/p>/g, '');
+        
+        message.innerHTML = `<span>${formattedText}</span>`;
+    } else {
+        message.innerHTML = `<span>${text}</span>`;
+    }
+    
+    container.appendChild(message);
+    container.scrollTop = container.scrollHeight;
+}
        
        function showResults(schools) {
            const resultsDiv = document.getElementById('results');
