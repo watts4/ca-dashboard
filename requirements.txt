@@ -1,0 +1,4 @@
+flask==2.3.3
+pymongo[srv]==4.5.0
+google-cloud-aiplatform==1.36.1
+gunicorn==21.2.0
