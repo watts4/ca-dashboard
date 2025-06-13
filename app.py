@@ -2030,12 +2030,8 @@ HTML_TEMPLATE = '''
                 <div class="example-query" onclick="setQuery(this.textContent)">What are the red and orange areas for Sunnyvale School District?</div>
                 <div class="example-query" onclick="setQuery(this.textContent)">Which student groups are struggling with math in San Miguel Elementary?</div>
                 <div class="example-query" onclick="setQuery(this.textContent)">Show me chronic absenteeism issues for Hispanic students</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">English learner performance in Los Angeles schools</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">What are the lowest performing areas for Black students in Oakland?</div>
                 <div class="example-query" onclick="setQuery(this.textContent)">Long-term English learners needing support in Fresno</div>
-<div class="example-query" onclick="setQuery(this.textContent)">College and career readiness in high schools</div>
 <div class="example-query" onclick="setQuery(this.textContent)">Which schools are preparing students for post-secondary success?</div>
-<div class="example-query" onclick="setQuery(this.textContent)">a-g completion rates for Hispanic students</div><div class="example-query" onclick="setQuery(this.textContent)">Which schools have high discipline problems?</div>
 <div class="example-query" onclick="setQuery(this.textContent)">Suspension rates for students with disabilities</div>
             </div>
         </div>
