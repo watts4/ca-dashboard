@@ -2152,6 +2152,8 @@ HTML_TEMPLATE = '''
        
        // UPDATE your addMessage function in the HTML template:
 
+// REPLACE your addMessage function in the HTML template with this FIXED version:
+
 function addMessage(text, sender) {
     const container = document.getElementById('chatContainer');
     const message = document.createElement('div');
@@ -2161,24 +2163,29 @@ function addMessage(text, sender) {
     if (sender === 'ai') {
         // Convert markdown-style formatting to HTML
         let formattedText = text
-            // Convert **bold** to <strong>
+            // Convert **bold** to <strong> - FIXED REGEX
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            // Convert * bullet points to HTML lists
-            .replace(/^\* (.*$)/gim, '<li>$1</li>')
-            // Wrap consecutive <li> items in <ul>
-            .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-            // Fix nested lists
-            .replace(/<\/ul>\s*<ul>/g, '')
-            // Add line breaks for ## headers
-            .replace(/^## (.*$)/gim, '<h3 style="color: #1976d2; margin-top: 20px; margin-bottom: 10px;">$1</h3>')
-            // Add line breaks for ### headers  
-            .replace(/^### (.*$)/gim, '<h4 style="color: #333; margin-top: 15px; margin-bottom: 8px;">$1</h4>')
-            // Convert double line breaks to paragraphs
-            .replace(/\n\n/g, '</p><p>')
-            // Wrap in paragraph tags
-            .replace(/^(.*)$/gim, '<p>$1</p>')
-            // Clean up empty paragraphs
-            .replace(/<p><\/p>/g, '');
+            // Convert * bullet points to HTML lists - FIXED REGEX  
+            .replace(/^\* (.*)$/gm, '<li>$1</li>')
+            // Add line breaks for ## headers - FIXED REGEX
+            .replace(/^## (.*)$/gm, '<h3 style="color: #1976d2; margin-top: 20px; margin-bottom: 10px;">$1</h3>')
+            // Add line breaks for ### headers - FIXED REGEX
+            .replace(/^### (.*)$/gm, '<h4 style="color: #333; margin-top: 15px; margin-bottom: 8px;">$1</h4>')
+            // Convert double line breaks to paragraph breaks
+            .replace(/\n\n/g, '<br><br>')
+            // Convert single line breaks to br tags
+            .replace(/\n/g, '<br>');
+        
+        // Wrap consecutive <li> items in <ul> - SIMPLIFIED APPROACH
+        if (formattedText.includes('<li>')) {
+            formattedText = formattedText.replace(/(<li>.*?<\/li>)/g, function(match) {
+                return match;
+            });
+            // Simple wrap all li items
+            formattedText = formattedText.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
+            // Clean up multiple ul tags
+            formattedText = formattedText.replace(/<\/ul><ul>/g, '');
+        }
         
         message.innerHTML = `<span>${formattedText}</span>`;
     } else {
@@ -2187,6 +2194,43 @@ function addMessage(text, sender) {
     
     container.appendChild(message);
     container.scrollTop = container.scrollHeight;
+}
+
+// MAKE SURE you still have the sendQuery function - ADD THIS if missing:
+async function sendQuery() {
+    const input = document.getElementById('queryInput');
+    const query = input.value.trim();
+    if (!query) return;
+    
+    // Add user message
+    addMessage(query, 'user');
+    input.value = '';
+    
+    // Add loading message
+    addMessage('🤔 Analyzing your question with CA Dashboard technical knowledge...', 'ai');
+    
+    try {
+        const response = await fetch('/query', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query: query})
+        });
+        
+        const data = await response.json();
+        
+        // Remove loading message
+        document.querySelector('#chatContainer .message:last-child').remove();
+        
+        // Add AI response
+        addMessage(data.response, 'ai');
+        
+        // Show detailed results
+        showResults(data.schools);
+        
+    } catch (error) {
+        document.querySelector('#chatContainer .message:last-child').remove();
+        addMessage('❌ Sorry, something went wrong. Please try again.', 'ai');
+    }
 }
        
        function showResults(schools) {
