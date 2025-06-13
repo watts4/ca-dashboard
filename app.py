@@ -2,7 +2,17 @@ from flask import Flask, request, jsonify, render_template_string
 import pymongo
 from pymongo import MongoClient
 import vertexai
-from vertexai.generative_models import GenerativeModel
+try:
+    from vertexai.generative_models import GenerativeModel
+except ImportError:
+    try:
+        from vertexai.preview.generative_models import GenerativeModel
+    except ImportError:
+        from google.cloud import aiplatform
+        from google.cloud.aiplatform import gapic
+        GenerativeModel = None
+        print("❌ Could not import GenerativeModel - check google-cloud-aiplatform version")
+
 import json
 import re
 import os
@@ -2826,5 +2836,8 @@ def test_query_simple():
     </html>
     '''
 
+
 if __name__ == '__main__':
-   app.run(debug=True, host='0.0.0.0', port=8080)
+    import os
+    port = int(os.environ.get('PORT', 8080))
+    app.run(debug=False, host='0.0.0.0', port=port)
