@@ -2038,7 +2038,7 @@ HTML_TEMPLATE = '''
         
         <div class="chat-container" id="chatContainer">
             <div class="message ai-message">
-                <span>👋 Hi! I can help you explore California school dashboard data with detailed student group breakdowns. I understand Distance from Standard (DFS), chronic absenteeism rates, English learner progress, and all the technical nuances of CA Dashboard indicators. Ask me anything!</span>
+                <span>👋 Hello! I can help you explore California school dashboard data with detailed student group breakdowns. I understand Distance from Standard (DFS), chronic absenteeism rates, English learner progress, and all the technical nuances of CA Dashboard indicators. Ask me anything!</span>
             </div>
         </div>
         
