@@ -1954,7 +1954,8 @@ Format your response with clear sections and bullet points. Be specific and acti
         print(f"AI analysis failed: {e}")
         return None
 
-# Enhanced HTML Template
+# REPLACE your entire HTML_TEMPLATE variable in app.py with this:
+
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
 <html>
@@ -1999,7 +2000,15 @@ HTML_TEMPLATE = '''
             background: white; border: 1px solid #e0e0e0; 
             padding: 12px 16px; border-radius: 18px 18px 18px 4px; 
             display: inline-block; max-width: 85%; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            line-height: 1.5;
         }
+        
+        /* Formatting for AI responses */
+        .ai-message strong { color: #1976d2; font-weight: 600; }
+        .ai-message h3 { color: #1976d2; margin-top: 20px; margin-bottom: 10px; font-size: 1.1em; }
+        .ai-message h4 { color: #333; margin-top: 15px; margin-bottom: 8px; font-size: 1em; }
+        .ai-message ul { margin: 10px 0; padding-left: 20px; }
+        .ai-message li { margin-bottom: 5px; }
         
         .examples { 
             background: white; padding: 25px; border-bottom: 1px solid #e0e0e0;
@@ -2087,293 +2096,247 @@ HTML_TEMPLATE = '''
                 <div class="example-query" onclick="setQuery(this.textContent)">What are the red and orange areas for Sunnyvale School District?</div>
                 <div class="example-query" onclick="setQuery(this.textContent)">Which student groups are struggling with math in San Miguel Elementary?</div>
                 <div class="example-query" onclick="setQuery(this.textContent)">Show me chronic absenteeism issues for Hispanic students</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">Long-term English learners needing support in Fresno</div>
-<div class="example-query" onclick="setQuery(this.textContent)">Which schools are preparing students for post-secondary success?</div>
-<div class="example-query" onclick="setQuery(this.textContent)">Suspension rates for students with disabilities</div>
+                <div class="example-query" onclick="setQuery(this.textContent)">English learner performance in Los Angeles schools</div>
+                <div class="example-query" onclick="setQuery(this.textContent)">What are the lowest performing areas for Black students in Oakland?</div>
+                <div class="example-query" onclick="setQuery(this.textContent)">Which school in Sunnyvale did the best with Hispanic students in math?</div>
             </div>
         </div>
         
         <div class="chat-container" id="chatContainer">
             <div class="message ai-message">
-                <span>👋 Hello! I can help you explore California school dashboard data with detailed student group breakdowns. I understand Distance from Standard (DFS), chronic absenteeism rates, English learner progress, and all the technical nuances of CA Dashboard indicators. Ask me anything!</span>
+                <span>👋 Hi! I can help you explore California school dashboard data with detailed student group breakdowns. I understand Distance from Standard (DFS), chronic absenteeism rates, English learner progress, and all the technical nuances of CA Dashboard indicators. Ask me anything!</span>
             </div>
         </div>
         
         <div class="input-section">
             <div class="input-container">
                 <input type="text" id="queryInput" placeholder="Ask about CA school performance by student groups..." onkeypress="if(event.key==='Enter') sendQuery()">
-              <button onclick="sendQuery()">Ask</button>
-           </div>
-       </div>
-   </div>
-   
-   <div class="results" id="results"></div>
-
-   <script>
-       function setQuery(text) {
-           document.getElementById('queryInput').value = text;
-       }
-       
-       async function sendQuery() {
-           const input = document.getElementById('queryInput');
-           const query = input.value.trim();
-           if (!query) return;
-           
-           // Add user message
-           addMessage(query, 'user');
-           input.value = '';
-           
-           // Add loading message
-           addMessage('🤔 Analyzing your question with CA Dashboard technical knowledge...', 'ai');
-           
-           try {
-               const response = await fetch('/query', {
-                   method: 'POST',
-                   headers: {'Content-Type': 'application/json'},
-                   body: JSON.stringify({query: query})
-               });
-               
-               const data = await response.json();
-               
-               // Remove loading message
-               document.querySelector('#chatContainer .message:last-child').remove();
-               
-               // Add AI response
-               addMessage(data.response, 'ai');
-               
-               // Show detailed results
-               showResults(data.schools);
-               
-           } catch (error) {
-               document.querySelector('#chatContainer .message:last-child').remove();
-               addMessage('❌ Sorry, something went wrong. Please try again.', 'ai');
-           }
-       }
-       
-       // UPDATE your addMessage function in the HTML template:
-
-// REPLACE your addMessage function in the HTML template with this FIXED version:
-
-function addMessage(text, sender) {
-    const container = document.getElementById('chatContainer');
-    const message = document.createElement('div');
-    message.className = `message ${sender}-message`;
+                <button onclick="sendQuery()">Ask</button>
+            </div>
+        </div>
+    </div>
     
-    // Format the AI response for better readability
-    if (sender === 'ai') {
-        // Convert markdown-style formatting to HTML
-        let formattedText = text
-            // Convert **bold** to <strong> - FIXED REGEX
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            // Convert * bullet points to HTML lists - FIXED REGEX  
-            .replace(/^\* (.*)$/gm, '<li>$1</li>')
-            // Add line breaks for ## headers - FIXED REGEX
-            .replace(/^## (.*)$/gm, '<h3 style="color: #1976d2; margin-top: 20px; margin-bottom: 10px;">$1</h3>')
-            // Add line breaks for ### headers - FIXED REGEX
-            .replace(/^### (.*)$/gm, '<h4 style="color: #333; margin-top: 15px; margin-bottom: 8px;">$1</h4>')
-            // Convert double line breaks to paragraph breaks
-            .replace(/\n\n/g, '<br><br>')
-            // Convert single line breaks to br tags
-            .replace(/\n/g, '<br>');
+    <div class="results" id="results"></div>
+
+    <script>
+        function setQuery(text) {
+            document.getElementById('queryInput').value = text;
+        }
         
-        // Wrap consecutive <li> items in <ul> - SIMPLIFIED APPROACH
-        if (formattedText.includes('<li>')) {
-            formattedText = formattedText.replace(/(<li>.*?<\/li>)/g, function(match) {
-                return match;
+        function addMessage(text, sender) {
+            const container = document.getElementById('chatContainer');
+            const message = document.createElement('div');
+            message.className = `message ${sender}-message`;
+            
+            // Format the AI response for better readability
+            if (sender === 'ai') {
+                // Convert markdown-style formatting to HTML
+                let formattedText = text
+                    // Convert **bold** to <strong>
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    // Convert * bullet points to HTML lists
+                    .replace(/^\* (.*)$/gm, '<li>$1</li>')
+                    // Add line breaks for ## headers
+                    .replace(/^## (.*)$/gm, '<h3>$1</h3>')
+                    // Add line breaks for ### headers
+                    .replace(/^### (.*)$/gm, '<h4>$1</h4>')
+                    // Convert double line breaks to paragraph breaks
+                    .replace(/\n\n/g, '<br><br>')
+                    // Convert single line breaks to br tags
+                    .replace(/\n/g, '<br>');
+                
+                // Wrap consecutive <li> items in <ul>
+                if (formattedText.includes('<li>')) {
+                    formattedText = '<ul>' + formattedText.replace(/(<li>.*?<\/li>)/g, '$1') + '</ul>';
+                    formattedText = formattedText.replace(/<\/li><li>/g, '</li><li>');
+                }
+                
+                message.innerHTML = `<span>${formattedText}</span>`;
+            } else {
+                message.innerHTML = `<span>${text}</span>`;
+            }
+            
+            container.appendChild(message);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        async function sendQuery() {
+            const input = document.getElementById('queryInput');
+            const query = input.value.trim();
+            if (!query) return;
+            
+            // Add user message
+            addMessage(query, 'user');
+            input.value = '';
+            
+            // Add loading message
+            addMessage('🤔 Analyzing your question with CA Dashboard technical knowledge...', 'ai');
+            
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: query})
+                });
+                
+                const data = await response.json();
+                
+                // Remove loading message
+                document.querySelector('#chatContainer .message:last-child').remove();
+                
+                // Add AI response
+                addMessage(data.response, 'ai');
+                
+                // Show detailed results
+                showResults(data.schools);
+                
+            } catch (error) {
+                document.querySelector('#chatContainer .message:last-child').remove();
+                addMessage('❌ Sorry, something went wrong. Please try again.', 'ai');
+            }
+        }
+        
+        function showResults(schools) {
+            const resultsDiv = document.getElementById('results');
+            if (!schools || schools.length === 0) {
+                resultsDiv.innerHTML = '';
+                return;
+            }
+            
+            let html = `<h3>📊 Detailed Results (${schools.length} schools)</h3>`;
+            
+            schools.slice(0, 15).forEach(school => {
+                const overallIndicators = school.dashboard_indicators || {};
+                const studentGroups = school.student_groups || {};
+                
+                // Overall performance badges
+                let overallBadges = '';
+                Object.keys(overallIndicators).forEach(indicator => {
+                    const data = overallIndicators[indicator];
+                    if (data && data.status && data.status !== 'Unknown') {
+                        const label = formatIndicatorLabel(indicator);
+                        const value = data.rate || data.points_below_standard || 0;
+                        const tooltip = formatTooltip(indicator, data.status, value);
+                        overallBadges += `<span class="status-badge ${data.status}" title="${tooltip}">${label}: ${data.status}</span>`;
+                    }
+                });
+                
+                // Student groups with issues
+                let studentGroupsHtml = '';
+                Object.keys(studentGroups).forEach(groupCode => {
+                    if (groupCode !== 'ALL') {
+                        const groupData = studentGroups[groupCode];
+                        const groupName = getGroupName(groupCode, groupData);
+                        
+                        let groupBadges = '';
+                        let hasIssues = false;
+                        
+                        Object.keys(groupData).forEach(indicator => {
+                            const data = groupData[indicator];
+                            if (data && data.status && ['Red', 'Orange'].includes(data.status)) {
+                                const label = formatIndicatorLabel(indicator);
+                                const value = data.rate || data.points_below_standard || 0;
+                                const tooltip = formatTooltip(indicator, data.status, value);
+                                groupBadges += `<span class="status-badge ${data.status}" title="${tooltip}">${label}: ${data.status}</span>`;
+                                hasIssues = true;
+                            }
+                        });
+                        
+                        if (hasIssues) {
+                            studentGroupsHtml += `
+                                <div class="student-group">
+                                    <div class="student-group-name">${groupName}</div>
+                                    ${groupBadges}
+                                </div>
+                            `;
+                        }
+                    }
+                });
+                
+                html += `
+                    <div class="school-card">
+                        <div class="school-name">${school.school_name}</div>
+                        <div class="district-name">${school.district_name}</div>
+                        <div class="performance-section">
+                            <div class="performance-label">Overall Performance:</div>
+                            ${overallBadges || '<span style="color: #666; font-style: italic;">No data available</span>'}
+                        </div>
+                        ${studentGroupsHtml}
+                    </div>
+                `;
             });
-            // Simple wrap all li items
-            formattedText = formattedText.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
-            // Clean up multiple ul tags
-            formattedText = formattedText.replace(/<\/ul><ul>/g, '');
+            
+            if (schools.length > 15) {
+                html += `
+                    <div class="school-card" style="text-align: center; color: #666; font-style: italic;">
+                        ... and ${schools.length - 15} more schools. Refine your search for more specific results.
+                    </div>
+                `;
+            }
+            
+            resultsDiv.innerHTML = html;
         }
         
-        message.innerHTML = `<span>${formattedText}</span>`;
-    } else {
-        message.innerHTML = `<span>${text}</span>`;
-    }
-    
-    container.appendChild(message);
-    container.scrollTop = container.scrollHeight;
-}
-
-// MAKE SURE you still have the sendQuery function - ADD THIS if missing:
-async function sendQuery() {
-    const input = document.getElementById('queryInput');
-    const query = input.value.trim();
-    if (!query) return;
-    
-    // Add user message
-    addMessage(query, 'user');
-    input.value = '';
-    
-    // Add loading message
-    addMessage('🤔 Analyzing your question with CA Dashboard technical knowledge...', 'ai');
-    
-    try {
-        const response = await fetch('/query', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({query: query})
-        });
-        
-        const data = await response.json();
-        
-        // Remove loading message
-        document.querySelector('#chatContainer .message:last-child').remove();
-        
-        // Add AI response
-        addMessage(data.response, 'ai');
-        
-        // Show detailed results
-        showResults(data.schools);
-        
-    } catch (error) {
-        document.querySelector('#chatContainer .message:last-child').remove();
-        addMessage('❌ Sorry, something went wrong. Please try again.', 'ai');
-    }
-}
-       
-       function showResults(schools) {
-           const resultsDiv = document.getElementById('results');
-           if (!schools || schools.length === 0) {
-               resultsDiv.innerHTML = '';
-               return;
-           }
-           
-           let html = `<h3>📊 Detailed Results (${schools.length} schools)</h3>`;
-           
-           schools.slice(0, 15).forEach(school => {
-               const overallIndicators = school.dashboard_indicators || {};
-               const studentGroups = school.student_groups || {};
-               
-               // Overall performance badges
-               let overallBadges = '';
-               Object.keys(overallIndicators).forEach(indicator => {
-                   const data = overallIndicators[indicator];
-                   if (data && data.status && data.status !== 'Unknown') {
-                       const label = formatIndicatorLabel(indicator);
-                       const value = data.rate || data.points_below_standard || 0;
-                       const tooltip = formatTooltip(indicator, data.status, value);
-                       overallBadges += `<span class="status-badge ${data.status}" title="${tooltip}">${label}: ${data.status}</span>`;
-                   }
-               });
-               
-               // Student groups with issues
-               let studentGroupsHtml = '';
-               Object.keys(studentGroups).forEach(groupCode => {
-                   if (groupCode !== 'ALL') {
-                       const groupData = studentGroups[groupCode];
-                       const groupName = getGroupName(groupCode, groupData);
-                       
-                       let groupBadges = '';
-                       let hasIssues = false;
-                       
-                       Object.keys(groupData).forEach(indicator => {
-                           const data = groupData[indicator];
-                           if (data && data.status && ['Red', 'Orange'].includes(data.status)) {
-                               const label = formatIndicatorLabel(indicator);
-                               const value = data.rate || data.points_below_standard || 0;
-                               const tooltip = formatTooltip(indicator, data.status, value);
-                               groupBadges += `<span class="status-badge ${data.status}" title="${tooltip}">${label}: ${data.status}</span>`;
-                               hasIssues = true;
-                           }
-                       });
-                       
-                       if (hasIssues) {
-                           studentGroupsHtml += `
-                               <div class="student-group">
-                                   <div class="student-group-name">${groupName}</div>
-                                   ${groupBadges}
-                               </div>
-                           `;
-                       }
-                   }
-               });
-               
-               html += `
-                   <div class="school-card">
-                       <div class="school-name">${school.school_name}</div>
-                       <div class="district-name">${school.district_name}</div>
-                       <div class="performance-section">
-                           <div class="performance-label">Overall Performance:</div>
-                           ${overallBadges || '<span style="color: #666; font-style: italic;">No data available</span>'}
-                       </div>
-                       ${studentGroupsHtml}
-                   </div>
-               `;
-           });
-           
-           if (schools.length > 15) {
-               html += `
-                   <div class="school-card" style="text-align: center; color: #666; font-style: italic;">
-                       ... and ${schools.length - 15} more schools. Refine your search for more specific results.
-                   </div>
-               `;
-           }
-           
-           resultsDiv.innerHTML = html;
-       }
-       
-       function formatIndicatorLabel(indicator) {
-    const labels = {
-        'chronic_absenteeism': 'Chronic Absences',
-        'ela_performance': 'ELA',
-        'math_performance': 'Math',
-        'english_learner_progress': 'EL Progress',
-        'suspension_rate': 'Suspensions',
-        'college_career': 'College/Career'  // NEW
-    };
-    return labels[indicator] || indicator.replace('_', ' ').toUpperCase();
-}
-
-function formatTooltip(indicator, status, value) {
-    if (indicator === 'chronic_absenteeism') {
-        return `${value.toFixed(1)}% of students chronically absent (≥10% days missed)`;
-    } else if (indicator === 'suspension_rate') {
-        return `${value.toFixed(1)}% of students suspended (≥1 full day aggregate)`;
-    } else if (indicator === 'college_career') {  // NEW
-        return `${value.toFixed(1)}% of graduates college/career prepared`;
-    } else if (indicator.includes('performance')) {
-        const subject = indicator.includes('ela') ? 'ELA' : 'Math';
-        if (value >= 0) {
-            return `${value.toFixed(1)} points above ${subject} standard`;
-        } else {
-            return `${Math.abs(value).toFixed(1)} points below ${subject} standard`;
+        function formatIndicatorLabel(indicator) {
+            const labels = {
+                'chronic_absenteeism': 'Chronic Absences',
+                'ela_performance': 'ELA',
+                'math_performance': 'Math',
+                'english_learner_progress': 'EL Progress',
+                'suspension_rate': 'Suspensions',
+                'college_career': 'College/Career'
+            };
+            return labels[indicator] || indicator.replace('_', ' ').toUpperCase();
         }
-    } else if (indicator === 'english_learner_progress') {
-        return `${value.toFixed(1)}% of English learners making progress toward proficiency`;
-    }
-    return `${status} performance level`;
-}
-       
-       function getGroupName(groupCode, groupData) {
-           // Try to get name from data first
-           for (let indicator in groupData) {
-               if (groupData[indicator] && groupData[indicator].student_group_name) {
-                   return groupData[indicator].student_group_name;
-               }
-           }
-           
-           // Fallback to code mapping
-           const groupNames = {
-               'AA': 'Black/African American',
-               'AI': 'American Indian',
-               'AS': 'Asian',
-               'FI': 'Filipino',
-               'HI': 'Hispanic/Latino',
-               'PI': 'Pacific Islander',
-               'WH': 'White',
-               'MR': 'Two or More Races',
-               'EL': 'English Learners',
-               'LTEL': 'Long-Term English Learners',
-               'SED': 'Socioeconomically Disadvantaged',
-               'SWD': 'Students with Disabilities',
-               'HOM': 'Homeless',
-               'FOS': 'Foster Youth'
-           };
-           return groupNames[groupCode] || groupCode;
-       }
-   </script>
+
+        function formatTooltip(indicator, status, value) {
+            if (indicator === 'chronic_absenteeism') {
+                return `${value.toFixed(1)}% of students chronically absent (≥10% days missed)`;
+            } else if (indicator === 'suspension_rate') {
+                return `${value.toFixed(1)}% of students suspended (≥1 full day aggregate)`;
+            } else if (indicator === 'college_career') {
+                return `${value.toFixed(1)}% of graduates college/career prepared`;
+            } else if (indicator.includes('performance')) {
+                const subject = indicator.includes('ela') ? 'ELA' : 'Math';
+                if (value >= 0) {
+                    return `${value.toFixed(1)} points above ${subject} standard`;
+                } else {
+                    return `${Math.abs(value).toFixed(1)} points below ${subject} standard`;
+                }
+            } else if (indicator === 'english_learner_progress') {
+                return `${value.toFixed(1)}% of English learners making progress toward proficiency`;
+            }
+            return `${status} performance level`;
+        }
+        
+        function getGroupName(groupCode, groupData) {
+            // Try to get name from data first
+            for (let indicator in groupData) {
+                if (groupData[indicator] && groupData[indicator].student_group_name) {
+                    return groupData[indicator].student_group_name;
+                }
+            }
+            
+            // Fallback to code mapping
+            const groupNames = {
+                'AA': 'Black/African American',
+                'AI': 'American Indian',
+                'AS': 'Asian',
+                'FI': 'Filipino',
+                'HI': 'Hispanic/Latino',
+                'PI': 'Pacific Islander',
+                'WH': 'White',
+                'MR': 'Two or More Races',
+                'EL': 'English Learners',
+                'LTEL': 'Long-Term English Learners',
+                'SED': 'Socioeconomically Disadvantaged',
+                'SWD': 'Students with Disabilities',
+                'HOM': 'Homeless',
+                'FOS': 'Foster Youth'
+            };
+            return groupNames[groupCode] || groupCode;
+        }
+    </script>
 </body>
 </html>
 '''
