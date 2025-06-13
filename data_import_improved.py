@@ -1,9 +1,40 @@
 import csv
 import pymongo
 from pymongo import MongoClient
+from dotenv import load_dotenv
 
-# Your MongoDB connection
-MONGODB_URI = "mongodb+srv://admin:pcDRhXeTjrzG1tOF@ca-schools.mi7p1is.mongodb.net/?retryWrites=true&w=majority&appName=ca-schools"
+# Load environment variables
+load_dotenv()
+
+# Your MongoDB connection - SECURE VERSION
+MONGODB_URI = os.getenv("MONGODB_URI")
+if not MONGODB_URI:
+    raise ValueError("MONGODB_URI environment variable is not set. Create a .env file with MONGODB_URI=your_connection_string")
+
+
+    print("📤 Uploading to MongoDB...")
+    
+    try:
+        client = MongoClient(MONGODB_URI)
+        db = client.ca_schools
+        collection = db.schools
+        
+        # Clear existing data
+        collection.delete_many({})
+        
+        # Insert new data
+        result = collection.insert_many(documents)
+        print(f"✅ Uploaded {len(result.inserted_ids)} documents to MongoDB!")
+        
+        # Test query with student groups
+        test_doc = collection.find_one({"school_name": {"$ne": ""}})
+        if test_doc:
+            print(f"✅ Test document: {test_doc['school_name']} in {test_doc['district_name']}")
+            print(f"   Student groups available: {list(test_doc.get('student_groups', {}).keys())}")
+        
+    except Exception as e:
+        print(f"❌ MongoDB upload failed: {e}")
+
 
 def get_color_status(color_code):
     """Convert color code to status"""
@@ -149,6 +180,30 @@ def load_csv_file(filename):
         print(f"❌ Error loading {filename}: {e}")
         return []
 
+
+    print("📤 Uploading to MongoDB...")
+    
+    try:
+        client = MongoClient(MONGODB_URI)
+        db = client.ca_schools
+        collection = db.schools
+        
+        # Clear existing data
+        collection.delete_many({})
+        
+        # Insert new data
+        result = collection.insert_many(documents)
+        print(f"✅ Uploaded {len(result.inserted_ids)} documents to MongoDB!")
+        
+        # Test query with student groups
+        test_doc = collection.find_one({"school_name": {"$ne": ""}})
+        if test_doc:
+            print(f"✅ Test document: {test_doc['school_name']} in {test_doc['district_name']}")
+            print(f"   Student groups available: {list(test_doc.get('student_groups', {}).keys())}")
+        
+    except Exception as e:
+        print(f"❌ MongoDB upload failed: {e}")
+
 def upload_to_mongodb(documents):
     print("📤 Uploading to MongoDB...")
     
@@ -172,6 +227,7 @@ def upload_to_mongodb(documents):
         
     except Exception as e:
         print(f"❌ MongoDB upload failed: {e}")
+
 
 if __name__ == "__main__":
     documents = create_school_documents_improved()
