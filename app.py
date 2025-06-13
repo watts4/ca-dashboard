@@ -1842,64 +1842,7 @@ def get_student_group_name(short_code):
             response_parts.append("• **Focus**: Academic language development and ELPAC preparation")
     
     return "\n".join(response_parts) if response_parts else f"Found {len(results)} schools. Check the detailed results below for specific performance data."
-# UPDATE your generate_ai_analysis function in app.py:
-
 def generate_ai_analysis(user_query: str, results: List[Dict], parsed_query: Dict) -> str:
-    """Use Gemini to generate intelligent analysis of the results"""
-    
-    # Prepare data summary for AI
-    data_summary = []
-    for school in results[:5]:  # Limit to avoid token limits
-        school_summary = {
-            "school_name": school.get("school_name", "Unknown"),
-            "district_name": school.get("district_name", "Unknown"),
-            "overall_performance": school.get("dashboard_indicators", {}),
-            "student_groups": {}
-        }
-        
-        # Add relevant student group data
-        target_groups = parsed_query.get("student_groups", ["ALL"])
-        if not target_groups:
-            target_groups = ["ALL"]
-            
-        for group in target_groups:
-            if group in school.get("student_groups", {}):
-                school_summary["student_groups"][group] = school["student_groups"][group]
-        
-        data_summary.append(school_summary)
-    
-    # IMPROVED PROMPT with better formatting instructions
-    analysis_prompt = f"""
-You are an expert California School Dashboard analyst. Analyze this school performance data and provide actionable insights.
-
-USER QUERY: {user_query}
-
-SCHOOL DATA: {json.dumps(data_summary, indent=2)}
-
-ANALYSIS CONTEXT:
-- chronic_absenteeism: % of students absent 10%+ days (LOWER is better)
-- ela_performance: Points above/below standard (HIGHER is better)  
-- math_performance: Points above/below standard (HIGHER is better)
-- Red = Most concerning, Orange = Below average, Yellow = Average, Green = Above average, Blue = Best
-
-FORMATTING REQUIREMENTS:
-1. Start with a clear, direct answer to the user's question
-2. Use short paragraphs (2-3 sentences max)
-3. Use bullet points for lists
-4. Use **bold** for school names and key metrics
-5. Include specific data points with school names
-6. Keep the response under 300 words
-7. Structure: Direct Answer → Key Findings → Recommendations
-
-Provide a comprehensive but CONCISE analysis that directly answers the question with specific data points and actionable recommendations.
-"""
-
-    try:
-        response = model.generate_content(analysis_prompt)
-        return response.text.strip()
-    except Exception as e:
-        print(f"AI analysis failed: {e}")
-        return None
     """Use Gemini to generate intelligent analysis of the results"""
     
     # Prepare data summary for AI
@@ -1954,8 +1897,7 @@ Format your response with clear sections and bullet points. Be specific and acti
         print(f"AI analysis failed: {e}")
         return None
 
-# REPLACE your entire HTML_TEMPLATE variable in app.py with this:
-
+# Enhanced HTML Template
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
 <html>
@@ -2000,15 +1942,7 @@ HTML_TEMPLATE = '''
             background: white; border: 1px solid #e0e0e0; 
             padding: 12px 16px; border-radius: 18px 18px 18px 4px; 
             display: inline-block; max-width: 85%; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            line-height: 1.5;
         }
-        
-        /* Formatting for AI responses */
-        .ai-message strong { color: #1976d2; font-weight: 600; }
-        .ai-message h3 { color: #1976d2; margin-top: 20px; margin-bottom: 10px; font-size: 1.1em; }
-        .ai-message h4 { color: #333; margin-top: 15px; margin-bottom: 8px; font-size: 1em; }
-        .ai-message ul { margin: 10px 0; padding-left: 20px; }
-        .ai-message li { margin-bottom: 5px; }
         
         .examples { 
             background: white; padding: 25px; border-bottom: 1px solid #e0e0e0;
@@ -2096,101 +2030,219 @@ HTML_TEMPLATE = '''
                 <div class="example-query" onclick="setQuery(this.textContent)">What are the red and orange areas for Sunnyvale School District?</div>
                 <div class="example-query" onclick="setQuery(this.textContent)">Which student groups are struggling with math in San Miguel Elementary?</div>
                 <div class="example-query" onclick="setQuery(this.textContent)">Show me chronic absenteeism issues for Hispanic students</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">English learner performance in Los Angeles schools</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">What are the lowest performing areas for Black students in Oakland?</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">Which school in Sunnyvale did the best with Hispanic students in math?</div>
+                <div class="example-query" onclick="setQuery(this.textContent)">Long-term English learners needing support in Fresno</div>
+<div class="example-query" onclick="setQuery(this.textContent)">Which schools are preparing students for post-secondary success?</div>
+<div class="example-query" onclick="setQuery(this.textContent)">Suspension rates for students with disabilities</div>
             </div>
         </div>
         
         <div class="chat-container" id="chatContainer">
             <div class="message ai-message">
-                <span>👋 Hi! I can help you explore California school dashboard data with detailed student group breakdowns. I understand Distance from Standard (DFS), chronic absenteeism rates, English learner progress, and all the technical nuances of CA Dashboard indicators. Ask me anything!</span>
+                <span>👋 Hello! I can help you explore California school dashboard data with detailed student group breakdowns. I understand Distance from Standard (DFS), chronic absenteeism rates, English learner progress, and all the technical nuances of CA Dashboard indicators. Ask me anything!</span>
             </div>
         </div>
         
         <div class="input-section">
             <div class="input-container">
                 <input type="text" id="queryInput" placeholder="Ask about CA school performance by student groups..." onkeypress="if(event.key==='Enter') sendQuery()">
-                <button onclick="sendQuery()">Ask</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="results" id="results"></div>
+              <button onclick="sendQuery()">Ask</button>
+           </div>
+       </div>
+   </div>
+   
+   <div class="results" id="results"></div>
 
-    // REPLACE ONLY the <script> section in your HTML template with this SIMPLE version:
-
-<script>
-function setQuery(text) {
-    document.getElementById('queryInput').value = text;
+   <script>
+       function setQuery(text) {
+           document.getElementById('queryInput').value = text;
+       }
+       
+       async function sendQuery() {
+           const input = document.getElementById('queryInput');
+           const query = input.value.trim();
+           if (!query) return;
+           
+           // Add user message
+           addMessage(query, 'user');
+           input.value = '';
+           
+           // Add loading message
+           addMessage('🤔 Analyzing your question with CA Dashboard technical knowledge...', 'ai');
+           
+           try {
+               const response = await fetch('/query', {
+                   method: 'POST',
+                   headers: {'Content-Type': 'application/json'},
+                   body: JSON.stringify({query: query})
+               });
+               
+               const data = await response.json();
+               
+               // Remove loading message
+               document.querySelector('#chatContainer .message:last-child').remove();
+               
+               // Add AI response
+               addMessage(data.response, 'ai');
+               
+               // Show detailed results
+               showResults(data.schools);
+               
+           } catch (error) {
+               document.querySelector('#chatContainer .message:last-child').remove();
+               addMessage('❌ Sorry, something went wrong. Please try again.', 'ai');
+           }
+       }
+       
+       function addMessage(text, sender) {
+           const container = document.getElementById('chatContainer');
+           const message = document.createElement('div');
+           message.className = `message ${sender}-message`;
+           message.innerHTML = `<span>${text}</span>`;
+           container.appendChild(message);
+           container.scrollTop = container.scrollHeight;
+       }
+       
+       function showResults(schools) {
+           const resultsDiv = document.getElementById('results');
+           if (!schools || schools.length === 0) {
+               resultsDiv.innerHTML = '';
+               return;
+           }
+           
+           let html = `<h3>📊 Detailed Results (${schools.length} schools)</h3>`;
+           
+           schools.slice(0, 15).forEach(school => {
+               const overallIndicators = school.dashboard_indicators || {};
+               const studentGroups = school.student_groups || {};
+               
+               // Overall performance badges
+               let overallBadges = '';
+               Object.keys(overallIndicators).forEach(indicator => {
+                   const data = overallIndicators[indicator];
+                   if (data && data.status && data.status !== 'Unknown') {
+                       const label = formatIndicatorLabel(indicator);
+                       const value = data.rate || data.points_below_standard || 0;
+                       const tooltip = formatTooltip(indicator, data.status, value);
+                       overallBadges += `<span class="status-badge ${data.status}" title="${tooltip}">${label}: ${data.status}</span>`;
+                   }
+               });
+               
+               // Student groups with issues
+               let studentGroupsHtml = '';
+               Object.keys(studentGroups).forEach(groupCode => {
+                   if (groupCode !== 'ALL') {
+                       const groupData = studentGroups[groupCode];
+                       const groupName = getGroupName(groupCode, groupData);
+                       
+                       let groupBadges = '';
+                       let hasIssues = false;
+                       
+                       Object.keys(groupData).forEach(indicator => {
+                           const data = groupData[indicator];
+                           if (data && data.status && ['Red', 'Orange'].includes(data.status)) {
+                               const label = formatIndicatorLabel(indicator);
+                               const value = data.rate || data.points_below_standard || 0;
+                               const tooltip = formatTooltip(indicator, data.status, value);
+                               groupBadges += `<span class="status-badge ${data.status}" title="${tooltip}">${label}: ${data.status}</span>`;
+                               hasIssues = true;
+                           }
+                       });
+                       
+                       if (hasIssues) {
+                           studentGroupsHtml += `
+                               <div class="student-group">
+                                   <div class="student-group-name">${groupName}</div>
+                                   ${groupBadges}
+                               </div>
+                           `;
+                       }
+                   }
+               });
+               
+               html += `
+                   <div class="school-card">
+                       <div class="school-name">${school.school_name}</div>
+                       <div class="district-name">${school.district_name}</div>
+                       <div class="performance-section">
+                           <div class="performance-label">Overall Performance:</div>
+                           ${overallBadges || '<span style="color: #666; font-style: italic;">No data available</span>'}
+                       </div>
+                       ${studentGroupsHtml}
+                   </div>
+               `;
+           });
+           
+           if (schools.length > 15) {
+               html += `
+                   <div class="school-card" style="text-align: center; color: #666; font-style: italic;">
+                       ... and ${schools.length - 15} more schools. Refine your search for more specific results.
+                   </div>
+               `;
+           }
+           
+           resultsDiv.innerHTML = html;
+       }
+       
+       function formatIndicatorLabel(indicator) {
+    const labels = {
+        'chronic_absenteeism': 'Chronic Absences',
+        'ela_performance': 'ELA',
+        'math_performance': 'Math',
+        'english_learner_progress': 'EL Progress',
+        'suspension_rate': 'Suspensions',
+        'college_career': 'College/Career'  // NEW
+    };
+    return labels[indicator] || indicator.replace('_', ' ').toUpperCase();
 }
 
-function addMessage(text, sender) {
-    const container = document.getElementById('chatContainer');
-    const message = document.createElement('div');
-    message.className = `message ${sender}-message`;
-    
-    // Simple formatting - NO COMPLEX REGEX
-    if (sender === 'ai') {
-        // Just replace line breaks with <br> tags
-        let formattedText = text.replace(/\n/g, '<br>');
-        message.innerHTML = `<span>${formattedText}</span>`;
-    } else {
-        message.innerHTML = `<span>${text}</span>`;
+function formatTooltip(indicator, status, value) {
+    if (indicator === 'chronic_absenteeism') {
+        return `${value.toFixed(1)}% of students chronically absent (≥10% days missed)`;
+    } else if (indicator === 'suspension_rate') {
+        return `${value.toFixed(1)}% of students suspended (≥1 full day aggregate)`;
+    } else if (indicator === 'college_career') {  // NEW
+        return `${value.toFixed(1)}% of graduates college/career prepared`;
+    } else if (indicator.includes('performance')) {
+        const subject = indicator.includes('ela') ? 'ELA' : 'Math';
+        if (value >= 0) {
+            return `${value.toFixed(1)} points above ${subject} standard`;
+        } else {
+            return `${Math.abs(value).toFixed(1)} points below ${subject} standard`;
+        }
+    } else if (indicator === 'english_learner_progress') {
+        return `${value.toFixed(1)}% of English learners making progress toward proficiency`;
     }
-    
-    container.appendChild(message);
-    container.scrollTop = container.scrollHeight;
+    return `${status} performance level`;
 }
-
-async function sendQuery() {
-    const input = document.getElementById('queryInput');
-    const query = input.value.trim();
-    if (!query) return;
-    
-    addMessage(query, 'user');
-    input.value = '';
-    addMessage('🤔 Analyzing...', 'ai');
-    
-    try {
-        const response = await fetch('/query', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({query: query})
-        });
-        
-        const data = await response.json();
-        document.querySelector('#chatContainer .message:last-child').remove();
-        addMessage(data.response, 'ai');
-        showResults(data.schools);
-        
-    } catch (error) {
-        document.querySelector('#chatContainer .message:last-child').remove();
-        addMessage('❌ Error occurred', 'ai');
-    }
-}
-
-function showResults(schools) {
-    const resultsDiv = document.getElementById('results');
-    if (!schools || schools.length === 0) {
-        resultsDiv.innerHTML = '';
-        return;
-    }
-    
-    let html = `<h3>📊 Results (${schools.length} schools)</h3>`;
-    
-    schools.slice(0, 10).forEach(school => {
-        html += `
-            <div class="school-card">
-                <div class="school-name">${school.school_name}</div>
-                <div class="district-name">${school.district_name}</div>
-            </div>
-        `;
-    });
-    
-    resultsDiv.innerHTML = html;
-}
-</script>
+       
+       function getGroupName(groupCode, groupData) {
+           // Try to get name from data first
+           for (let indicator in groupData) {
+               if (groupData[indicator] && groupData[indicator].student_group_name) {
+                   return groupData[indicator].student_group_name;
+               }
+           }
+           
+           // Fallback to code mapping
+           const groupNames = {
+               'AA': 'Black/African American',
+               'AI': 'American Indian',
+               'AS': 'Asian',
+               'FI': 'Filipino',
+               'HI': 'Hispanic/Latino',
+               'PI': 'Pacific Islander',
+               'WH': 'White',
+               'MR': 'Two or More Races',
+               'EL': 'English Learners',
+               'LTEL': 'Long-Term English Learners',
+               'SED': 'Socioeconomically Disadvantaged',
+               'SWD': 'Students with Disabilities',
+               'HOM': 'Homeless',
+               'FOS': 'Foster Youth'
+           };
+           return groupNames[groupCode] || groupCode;
+       }
+   </script>
 </body>
 </html>
 '''
