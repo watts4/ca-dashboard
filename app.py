@@ -850,4 +850,4 @@ def handle_query():
 if __name__ == '__main__':
     # Use environment variable for port, default to 8080
     port = int(os.environ.get("PORT", 8080))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=False, host='0.0.0.0', port=port)
