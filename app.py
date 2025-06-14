@@ -398,7 +398,7 @@ def generate_template_response(user_query: str, results: List[Dict], parsed_quer
     if len(results) == 1:
         # Single school analysis
         school = results[0]
-        school_name = school.get("school_name", "Unknown School")
+        school_name = school.get("school_name", "District Overall")
         district_name = school.get("district_name", "Unknown District")
         
         response_parts = [f"**{school_name}** ({district_name})"]
@@ -452,7 +452,7 @@ def generate_template_response(user_query: str, results: List[Dict], parsed_quer
         response_parts = [f"**Found {len(results)} schools** with performance concerns:"]
         
         if problem_schools:
-            response_parts.extend(problem_schools[:8])  # Limit to 8 schools
+            response_parts.extend(problem_schools[:11])  # Limit to 8 schools
             if len(results) > 8:
                 response_parts.append(f"*...and {len(results) - 8} more schools*")
         
@@ -719,7 +719,7 @@ HTML_TEMPLATE = '''
     <div class="container">
         <div class="header">
             <h1>🏫 California Schools AI Dashboard</h1>
-            <p>Explore school performance data using natural language</p>
+            <p>Explore CA Dashboard data using natural language. Powered by MongoDB and Gemini</p>
         </div>
         
         <!-- Tab Navigation -->
@@ -742,16 +742,16 @@ HTML_TEMPLATE = '''
             <div class="tab-content active" id="chatTab">
                 <div class="chat-container" id="chatContainer">
                     <div class="message ai-message">
-                        <span>👋 Hi! I can help you explore California school dashboard data. Ask me anything about school performance, student groups, or specific districts!</span>
+                        <span>👋 Hi! I can help you explore California school dashboard data. Ask me about school performance, student groups, or specific districts!</span>
                     </div>
                 </div>
                 
                 <div class="examples">
                     <h3>💡 Try an example:</h3>
                     <div class="example-grid">
-                        <div class="example-query" data-query="Which schools in Sunnyvale have red or orange math performance for Hispanic students?">Schools in Sunnyvale with math issues for Hispanic students</div>
-                        <div class="example-query" data-query="Show me chronic absenteeism issues for English Learners in Oakland">Absenteeism for English Learners in Oakland</div>
-                        <div class="example-query" data-query="Find schools in San Francisco with Blue or Green ELA performance">High-performing ELA schools in SF</div>
+                        <div class="example-query" data-query="Which schools in Sunnyvale have red or orange math performance for English Learner students?">Schools in Sunnyvale with red or orange performance for English Learners</div>
+                        <div class="example-query" data-query="Show me chronic absenteeism data for English Learners in Oakland">Absenteeism for English Learners in Oakland</div>
+                        <div class="example-query" data-query="Find schools in San Francisco with Blue or Green ELA performance">High-performing ELA schools in San Francisco</div>
                     </div>
                 </div>
             </div>
@@ -760,7 +760,7 @@ HTML_TEMPLATE = '''
             <div class="tab-content" id="resultsTab">
                 <div class="empty-state" id="emptyResults">
                     <h3>📊 No Results Yet</h3>
-                    <p>Ask a question to see school performance data here</p>
+                    <p>Ask a question or type a school or district to see dashboard indicator data</p>
                 </div>
                 <div class="results-content" id="resultsContent" style="display: none;"></div>
             </div>
@@ -769,7 +769,7 @@ HTML_TEMPLATE = '''
         <!-- Input Section - Always Visible -->
         <div class="input-section">
             <div class="input-container">
-                <input id="queryInput" type="text" placeholder="Ask about California schools...">
+                <input id="queryInput" type="text" placeholder="What California school or district do you want to learn about...">
                 <button id="sendQueryBtn">Ask</button>
             </div>
         </div>
