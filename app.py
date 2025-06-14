@@ -425,10 +425,7 @@ def get_student_group_name(short_code):
     return group_map.get(short_code, short_code)
 
 # ==============================================================================
-# ===                           HTML TEMPLATE                                ===
-# ==============================================================================
-# The script section below has been fully restored to parse the JSON data
-# and render it as proper HTML tables and cards.
+# ===                           HTML TEMPLATE - TABBED VERSION              ===
 # ==============================================================================
 
 HTML_TEMPLATE = '''
@@ -464,20 +461,77 @@ HTML_TEMPLATE = '''
         .header h1 { margin: 0 0 5px 0; font-size: 1.8em; font-weight: 500; }
         .header p { margin: 0; opacity: 0.9; font-size: 1em; }
         
-        .main-content {
+        /* Tab Navigation */
+        .tab-navigation {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0;
+            flex-shrink: 0;
+        }
+        .tab-buttons {
             display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-button:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+        .tab-button.active {
+            color: #1976d2;
+            border-bottom-color: #1976d2;
+            background: white;
+        }
+        .tab-badge {
+            background: #1976d2;
+            color: white;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+        .tab-button:not(.active) .tab-badge {
+            background: #6c757d;
         }
 
-        .chat-area {
+        /* Tab Content Area */
+        .tab-content-area {
+            flex-grow: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-content {
             flex-grow: 1;
             overflow-y: auto;
             padding: 25px;
+            display: none;
         }
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Chat Tab Styles */
         .chat-container { 
-            background: #fff;
+            flex-grow: 1;
+            overflow-y: auto;
         }
         .message { margin-bottom: 20px; display: flex; }
         .user-message { justify-content: flex-end; }
@@ -495,7 +549,8 @@ HTML_TEMPLATE = '''
         }
         
         .examples { 
-            background: #fafafa; padding: 20px 25px; border-top: 1px solid #e8e8e8;
+            background: #fafafa; padding: 20px; border-top: 1px solid #e8e8e8;
+            margin-top: auto;
             flex-shrink: 0;
         }
         .examples h3 { margin: 0 0 10px 0; color: #333; font-weight: 500; font-size: 1em; }
@@ -508,37 +563,21 @@ HTML_TEMPLATE = '''
         .example-query:hover { 
             background: #e3f2fd; border-color: #1976d2; color: #1976d2;
         }
-        
-        .input-section { 
-            padding: 15px 25px; background: white; border-top: 1px solid #e8e8e8;
-            flex-shrink: 0;
-        }
-        .input-container { display: flex; gap: 12px; }
-        .input-container input { 
-            flex: 1; padding: 14px; border: 1px solid #ddd; border-radius: 8px; 
-            font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .input-container input:focus { 
-            outline: none; border-color: #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,0.2);
-        }
-        .input-container button { 
-            padding: 14px 28px; background: #1976d2; 
-            color: white; border: none; border-radius: 8px; cursor: pointer; 
-            font-size: 15px; font-weight: 500; transition: background-color 0.2s;
-        }
-        .input-container button:hover { background-color: #1565c0; }
-        
-        .results { 
-            background: #f8f9fa;
-            border-top: 1px solid #e8e8e8;
-            padding: 20px;
+
+        /* Results Tab Styles */
+        .results-content {
+            flex-grow: 1;
             overflow-y: auto;
-            flex-shrink: 0; /* Let it take space but not grow */
-            max-height: 50vh; /* Don't let it take over the whole screen */
         }
-        .results h3 { 
-            padding-bottom: 15px; margin: 0 0 15px 0; font-weight: 500;
-            border-bottom: 1px solid #ddd; color: #333;
+        .results-header { 
+            margin-bottom: 20px; 
+            padding-bottom: 15px; 
+            border-bottom: 1px solid #ddd;
+        }
+        .results-header h3 { 
+            margin: 0; 
+            font-weight: 500; 
+            color: #333;
         }
         .performance-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
         .performance-table th, .performance-table td { padding: 10px 12px; border: 1px solid #ddd; text-align: left; }
@@ -558,6 +597,46 @@ HTML_TEMPLATE = '''
         .student-group-selector { margin-bottom: 15px; font-size: 14px; }
         .student-group-selector label { margin-right: 15px; }
         .results-footer { text-align: center; margin-top: 15px; color: #666; font-style: italic; font-size: 13px; }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            color: #666;
+            padding: 60px 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .empty-state h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .empty-state p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        /* Input Section - Always visible */
+        .input-section { 
+            padding: 15px 25px; 
+            background: white; 
+            border-top: 1px solid #e8e8e8;
+            flex-shrink: 0;
+        }
+        .input-container { display: flex; gap: 12px; }
+        .input-container input { 
+            flex: 1; padding: 14px; border: 1px solid #ddd; border-radius: 8px; 
+            font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-container input:focus { 
+            outline: none; border-color: #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,0.2);
+        }
+        .input-container button { 
+            padding: 14px 28px; background: #1976d2; 
+            color: white; border: none; border-radius: 8px; cursor: pointer; 
+            font-size: 15px; font-weight: 500; transition: background-color 0.2s;
+        }
+        .input-container button:hover { background-color: #1565c0; }
     </style>
 </head>
 <body>
@@ -567,44 +646,84 @@ HTML_TEMPLATE = '''
             <p>Explore school performance data using natural language</p>
         </div>
         
-        <div class="main-content">
-            <div class="chat-area">
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="chat">
+                    💬 Chat
+                    <span class="tab-badge" id="chatBadge">1</span>
+                </button>
+                <button class="tab-button" data-tab="results" id="resultsButton">
+    📊 Results
+    <span class="tab-badge" id="resultsBadge" style="display: none;">0</span>
+</button>
+            </div>
+        </div>
+
+        <!-- Tab Content Area -->
+        <div class="tab-content-area">
+            <!-- Chat Tab -->
+            <div class="tab-content active" id="chatTab">
                 <div class="chat-container" id="chatContainer">
                     <div class="message ai-message">
                         <span>👋 Hi! I can help you explore California school dashboard data. Ask me anything about school performance, student groups, or specific districts!</span>
                     </div>
                 </div>
-            </div>
-            <div class="results" id="results" style="display:none;"></div>
-            <div class="examples" id="examplesContainer">
-                <h3>💡 Try an example:</h3>
-                <div class="example-grid">
-                    <div class="example-query" data-query="Which schools in Sunnyvale have red or orange math performance for Hispanic students?">Schools in Sunnyvale with math issues for Hispanic students</div>
-                    <div class="example-query" data-query="Show me chronic absenteeism issues for English Learners in Oakland">Absenteeism for English Learners in Oakland</div>
-                    <div class="example-query" data-query="Find schools in San Francisco with Blue or Green ELA performance">High-performing ELA schools in SF</div>
+                
+                <div class="examples">
+                    <h3>💡 Try an example:</h3>
+                    <div class="example-grid">
+                        <div class="example-query" data-query="Which schools in Sunnyvale have red or orange math performance for Hispanic students?">Schools in Sunnyvale with math issues for Hispanic students</div>
+                        <div class="example-query" data-query="Show me chronic absenteeism issues for English Learners in Oakland">Absenteeism for English Learners in Oakland</div>
+                        <div class="example-query" data-query="Find schools in San Francisco with Blue or Green ELA performance">High-performing ELA schools in SF</div>
+                    </div>
                 </div>
             </div>
-            <div class="input-section">
-                <div class="input-container">
-                    <input id="queryInput" type="text" placeholder="Ask about California schools...">
-                    <button id="sendQueryBtn">Ask</button>
+
+            <!-- Results Tab -->
+            <div class="tab-content" id="resultsTab">
+                <div class="empty-state" id="emptyResults">
+                    <h3>📊 No Results Yet</h3>
+                    <p>Ask a question to see school performance data here</p>
                 </div>
+                <div class="results-content" id="resultsContent" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Input Section - Always Visible -->
+        <div class="input-section">
+            <div class="input-container">
+                <input id="queryInput" type="text" placeholder="Ask about California schools...">
+                <button id="sendQueryBtn">Ask</button>
             </div>
         </div>
     </div>
 
     <script>
     // ==============================================================================
-    // ===                           JAVASCRIPT CORE                            ===
+    // ===                           JAVASCRIPT - TABBED VERSION                ===
     // ==============================================================================
+    
+    let messageCount = 1;
+    let currentSchoolCount = 0;
+
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM fully loaded. Setting up event listeners.");
 
         const queryInput = document.getElementById('queryInput');
         const sendQueryBtn = document.getElementById('sendQueryBtn');
-        const examplesContainer = document.getElementById('examplesContainer');
-        const resultsDiv = document.getElementById('results');
+        const chatTab = document.getElementById('chatTab');
+        const resultsTab = document.getElementById('resultsTab');
 
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetTab = this.dataset.tab;
+                switchTab(targetTab);
+            });
+        });
+
+        // Send query functionality
         if (sendQueryBtn) {
             sendQueryBtn.addEventListener('click', sendQuery);
         }
@@ -618,28 +737,28 @@ HTML_TEMPLATE = '''
             });
         }
 
-        if (examplesContainer) {
-            examplesContainer.addEventListener('click', function(event) {
-                if (event.target && event.target.matches('.example-query')) {
-                    const queryText = event.target.dataset.query;
-                    if (queryText) {
-                        setQuery(queryText);
-                        sendQuery(); // Optionally send the query right away
-                    }
+        // Example query clicks
+        chatTab.addEventListener('click', function(event) {
+            if (event.target && event.target.matches('.example-query')) {
+                const queryText = event.target.dataset.query;
+                if (queryText) {
+                    setQuery(queryText);
+                    sendQuery();
                 }
-            });
-        }
+            }
+        });
 
         // Event delegation for dynamically created results content
-        if(resultsDiv) {
-            resultsDiv.addEventListener('click', function(event) {
+        const resultsContent = document.getElementById('resultsContent');
+        if(resultsContent) {
+            resultsContent.addEventListener('click', function(event) {
                 const target = event.target;
                 if (target.matches('.view-toggle button')) {
                     const viewType = target.dataset.view;
                     if(viewType) toggleView(viewType, target);
                 }
             });
-            resultsDiv.addEventListener('change', function(event) {
+            resultsContent.addEventListener('change', function(event) {
                 const target = event.target;
                 if(target.matches('input[name="studentGroup"]')) {
                     updateTableView();
@@ -647,6 +766,40 @@ HTML_TEMPLATE = '''
             });
         }
     });
+
+    function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+    // Update tab content - use correct mapping
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    if (tabName === 'chat') {
+        document.getElementById('chatTab').classList.add('active');
+    } else if (tabName === 'results') {
+        document.getElementById('resultsTab').classList.add('active');
+    }
+}
+
+    function updateTabBadges() {
+        // Update chat badge with message count
+        const chatBadge = document.getElementById('chatBadge');
+        chatBadge.textContent = Math.floor(messageCount / 2); // Divide by 2 since we count both user and AI messages
+
+        // Update results badge
+        const resultsBadge = document.getElementById('resultsBadge');
+        if (currentSchoolCount > 0) {
+            resultsBadge.textContent = currentSchoolCount;
+            resultsBadge.style.display = 'inline';
+        } else {
+            resultsBadge.style.display = 'none';
+        }
+    }
 
     function setQuery(text) {
         document.getElementById('queryInput').value = text;
@@ -660,7 +813,6 @@ HTML_TEMPLATE = '''
         addMessage(query, 'user');
         input.value = '';
         addMessage('🤔 Analyzing...', 'ai');
-        document.getElementById('results').style.display = 'none'; // Hide old results
 
         fetch('/query', {
             method: 'POST',
@@ -672,25 +824,38 @@ HTML_TEMPLATE = '''
             return response.json();
         })
         .then(data => {
+            // Remove the "Analyzing..." message
             const messages = document.querySelectorAll('#chatContainer .message');
             const lastMessage = messages[messages.length - 1];
             if (lastMessage && lastMessage.textContent.includes('Analyzing')) {
                 lastMessage.remove();
+                messageCount--; // Adjust count since we're removing a message
             }
+            
             addMessage(data.response, 'ai');
             
-            // *** THIS IS THE FIX: Call showResults instead of displaying raw JSON ***
+            // Handle results
             if (data.schools && data.schools.length > 0) {
                 showResults(data.schools);
+                // Auto-switch to results tab when we get data
+                switchTab('results');
+            } else {
+                // Clear results if no schools found
+                showEmptyResults();
             }
+            
+            updateTabBadges();
         })
         .catch(error => {
+            // Remove the "Analyzing..." message
             const messages = document.querySelectorAll('#chatContainer .message');
             const lastMessage = messages[messages.length - 1];
             if (lastMessage && lastMessage.textContent.includes('Analyzing')) {
                 lastMessage.remove();
+                messageCount--;
             }
             addMessage('❌ An error occurred: ' + error.message, 'ai');
+            updateTabBadges();
             console.error('Error fetching data:', error);
         });
     }
@@ -707,41 +872,75 @@ HTML_TEMPLATE = '''
         }
         message.innerHTML = `<span>${formattedText}</span>`;
         container.appendChild(message);
-        // Scroll to the new message
-        document.querySelector('.chat-area').scrollTop = document.querySelector('.chat-area').scrollHeight;
-    }
-
-    // --- Functions to Render Results ---
-    function showResults(schools) {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.style.display = 'block';
-
-        const allIndicators = new Set();
-        const allStudentGroups = new Set(['ALL']);
-        schools.forEach(school => {
-            Object.keys(school.dashboard_indicators || {}).forEach(ind => allIndicators.add(ind));
-            Object.keys(school.student_groups || {}).forEach(grp => allStudentGroups.add(grp));
-        });
-        const indicators = Array.from(allIndicators);
-        const studentGroups = Array.from(allStudentGroups);
         
-        let html = `<h3>📊 Detailed Results (${schools.length} schools)</h3>`;
-        html += `<div class="view-toggle">
-                    <button class="active" data-view="table">Table View</button>
-                 </div>`;
-
-        if (studentGroups.length > 1) {
-            html += '<div class="student-group-selector"><strong>View Performance For: </strong>';
-            studentGroups.forEach(group => {
-                const checked = group === 'ALL' ? 'checked' : '';
-                html += `<label><input type="radio" name="studentGroup" value="${group}" ${checked}> ${getStudentGroupName(group)}</label>`;
-            });
-            html += '</div>';
-        }
-
-        html += `<div id="tableView" class="performance-table">${generateTableView(schools, indicators, 'ALL')}</div>`;
-        resultsDiv.innerHTML = html;
+        // Scroll to the new message
+        container.scrollTop = container.scrollHeight;
+        
+        messageCount++;
+        updateTabBadges();
     }
+
+    function showEmptyResults() {
+        document.getElementById('emptyResults').style.display = 'block';
+        document.getElementById('resultsContent').style.display = 'none';
+        currentSchoolCount = 0;
+        updateTabBadges();
+    }
+
+    function showResults(schools) {
+    console.log('DEBUG - showResults called with', schools.length, 'schools');
+    currentSchoolCount = schools.length;
+    
+    const emptyResults = document.getElementById('emptyResults');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    if (emptyResults) {
+        emptyResults.style.display = 'none';
+        console.log('DEBUG - Hidden empty results');
+    }
+    
+    if (resultsContent) {
+        // Use !important to override any CSS that might be hiding it
+        resultsContent.style.setProperty('display', 'block', 'important');
+        console.log('DEBUG - Showing results content with !important');
+    } else {
+        console.error('ERROR - resultsContent element not found!');
+        return;
+    }
+
+    const allIndicators = new Set();
+    const allStudentGroups = new Set(['ALL']);
+    schools.forEach(school => {
+        Object.keys(school.dashboard_indicators || {}).forEach(ind => allIndicators.add(ind));
+        Object.keys(school.student_groups || {}).forEach(grp => allStudentGroups.add(grp));
+    });
+    const indicators = Array.from(allIndicators);
+    const studentGroups = Array.from(allStudentGroups);
+    
+    let html = `<div class="results-header">
+                  <h3>📊 School Performance Results (${schools.length} schools)</h3>
+                </div>`;
+    
+    html += `<div class="view-toggle">
+                <button class="active" data-view="table">Table View</button>
+             </div>`;
+
+    if (studentGroups.length > 1) {
+        html += '<div class="student-group-selector"><strong>View Performance For: </strong>';
+        studentGroups.forEach(group => {
+            const checked = group === 'ALL' ? 'checked' : '';
+            html += `<label><input type="radio" name="studentGroup" value="${group}" ${checked}> ${getStudentGroupName(group)}</label>`;
+        });
+        html += '</div>';
+    }
+
+    html += `<div id="tableView" class="performance-table">${generateTableView(schools, indicators, 'ALL')}</div>`;
+    
+    resultsContent.innerHTML = html;
+    console.log('DEBUG - HTML injected successfully');
+    
+    updateTabBadges();
+}
 
     function toggleView(viewType, buttonElement) {
         document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
@@ -841,6 +1040,13 @@ def handle_query():
     except Exception as e:
         print(f"MongoDB query failed: {e}")
         return jsonify({"error": "Database query failed"}), 500
+
+    # Add debug logging for results
+    print(f"DEBUG - Query returned {len(results)} schools")
+    if len(results) > 0:
+        print(f"DEBUG - First school: {results[0].get('school_name', 'Unknown')} in {results[0].get('district_name', 'Unknown')}")
+    else:
+        print("DEBUG - No schools found matching criteria")
 
     # Generate the final response
     response_text = generate_intelligent_response(user_query, results, parsed_query)
