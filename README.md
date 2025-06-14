@@ -2,7 +2,7 @@
 
 *Making California school performance data accessible through natural language AI*
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Available-green?style=for-the-badge)](cadashboard.wattswattswatts.com)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Available-green?style=for-the-badge)](https://cadashboard.wattswattswatts.com)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/watts4/ca-dashboard)
 
 ## 🎯 Overview
@@ -186,7 +186,7 @@ This project was built for the **AI in Action Hackathon** sponsored by Google Cl
 
 ## 📞 Contact
 
-- **Developer**: [Your Name](mailto:jonathanwatts@gmail.com)
+- **Developer**: [Jonathan Watts](mailto:jonathanwatts@gmail.com)
 - **Project**: [Live Demo](cadashboard.wattswattswatts.com)
 - **Repository**: [GitHub](https://github.com/watts4/ca-dashboard)
 
