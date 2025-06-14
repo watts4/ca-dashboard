@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify, render_template_string
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import pymongo
 from pymongo import MongoClient
 import vertexai
@@ -20,6 +22,12 @@ from dotenv import load_dotenv
 from typing import Dict, List, Any
 
 app = Flask(__name__)
+# Rate limiting to prevent abuse  
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per hour"]
+)
 # Load environment variables
 load_dotenv()
 # MongoDB connection - SECURE VERSION
@@ -1094,6 +1102,8 @@ def index():
     return render_template_string(HTML_TEMPLATE)
 
 @app.route('/query', methods=['POST'])
+@limiter.limit("10 per minute")  # Max 10 queries per minute per IP
+
 def handle_query():
     user_query = request.json.get('query')
     if not user_query:
