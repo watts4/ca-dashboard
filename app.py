@@ -466,42 +466,9 @@ HTML_TEMPLATE = '''
         }
         .ai-message span { 
             background: white; border: 1px solid #e0e0e0; 
-            padding: 16px 20px; border-radius: 18px 18px 18px 4px; 
+            padding: 12px 16px; border-radius: 18px 18px 18px 4px; 
             display: inline-block; max-width: 85%; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             line-height: 1.5;
-        }
-        
-        /* Improved AI response formatting */
-        .ai-message span h3 {
-            margin: 0 0 12px 0;
-            color: #1976d2;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        
-        .ai-message span h4 {
-            margin: 16px 0 8px 0;
-            color: #333;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .ai-message span ul {
-            margin: 8px 0;
-            padding-left: 20px;
-        }
-        
-        .ai-message span li {
-            margin: 6px 0;
-            line-height: 1.4;
-        }
-        
-        .ai-message span strong {
-            color: #1976d2;
-        }
-        
-        .ai-message span p {
-            margin: 8px 0;
         }
         
         .examples { 
@@ -536,12 +503,6 @@ HTML_TEMPLATE = '''
         .input-container button:hover { 
             transform: translateY(-1px); box-shadow: 0 8px 20px rgba(25,118,210,0.3);
         }
-        .input-container button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
         
         .results { margin-top: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .results h3 { 
@@ -555,32 +516,6 @@ HTML_TEMPLATE = '''
         .school-card:last-child { border-bottom: none; border-radius: 0 0 12px 12px; }
         .school-name { font-weight: 600; color: #1976d2; font-size: 18px; margin-bottom: 5px; }
         .district-name { color: #666; margin-bottom: 15px; font-size: 14px; }
-        
-        .status-badge { 
-            padding: 4px 10px; border-radius: 6px; color: white; font-size: 12px; 
-            margin: 3px; display: inline-block; font-weight: 500;
-        }
-        .Red { background: linear-gradient(135deg, #d32f2f, #c62828); }
-        .Orange { background: linear-gradient(135deg, #f57c00, #ef6c00); }
-        .Yellow { background: linear-gradient(135deg, #fbc02d, #f9a825); color: #333; }
-        .Green { background: linear-gradient(135deg, #388e3c, #2e7d32); }
-        .Blue { background: linear-gradient(135deg, #1976d2, #1565c0); }
-        
-        .student-group { 
-            margin-top: 15px; padding: 12px; background: #f8f9fa; 
-            border-radius: 8px; border-left: 4px solid #1976d2;
-        }
-        .student-group-name { font-weight: 600; color: #1976d2; margin-bottom: 8px; font-size: 14px; }
-        
-        .performance-section { margin-top: 10px; }
-        .performance-label { font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #333; }
-        
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-            .header h1 { font-size: 1.8em; }
-            .input-container { flex-direction: column; }
-            .example-grid { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
@@ -593,25 +528,23 @@ HTML_TEMPLATE = '''
         <div class="examples">
             <h3>💡 Try These Example Queries:</h3>
             <div class="example-grid">
-                <div class="example-query" onclick="setQuery(this.textContent)">What are the red and orange areas for Sunnyvale School District?</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">Which student groups are struggling with math in San Miguel Elementary?</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">Show me chronic absenteeism issues for Hispanic students</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">Long-term English learners needing support in Fresno</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">Which schools have red performance indicators?</div>
-                <div class="example-query" onclick="setQuery(this.textContent)">ELA performance problems in Oakland schools</div>
+                <div class="example-query" onclick="setQuery('What are the red and orange areas for Sunnyvale School District?')">What are the red and orange areas for Sunnyvale School District?</div>
+                <div class="example-query" onclick="setQuery('Which student groups are struggling with math in San Miguel Elementary?')">Which student groups are struggling with math in San Miguel Elementary?</div>
+                <div class="example-query" onclick="setQuery('Show me chronic absenteeism issues for Hispanic students')">Show me chronic absenteeism issues for Hispanic students</div>
+                <div class="example-query" onclick="setQuery('Which school in Sunnyvale did the best with Hispanic students in math?')">Which school in Sunnyvale did the best with Hispanic students in math?</div>
             </div>
         </div>
         
         <div class="chat-container" id="chatContainer">
             <div class="message ai-message">
-                <span>👋 Hello! I can help you explore California school dashboard data with detailed student group breakdowns. I understand Distance from Standard (DFS), chronic absenteeism rates, and all the technical nuances of CA Dashboard indicators. Ask me anything!</span>
+                <span>👋 Hi! I can help you explore California school dashboard data. Ask me anything about school performance, student groups, or specific districts!</span>
             </div>
         </div>
         
         <div class="input-section">
             <div class="input-container">
-                <input type="text" id="queryInput" placeholder="Ask about CA school performance by student groups..." onkeypress="if(event.key==='Enter') sendQuery()">
-                <button id="askButton" onclick="sendQuery()">Ask</button>
+                <input type="text" id="queryInput" placeholder="Ask about CA school performance..." onkeypress="if(event.key==='Enter') sendQuery()">
+                <button onclick="sendQuery()">Ask</button>
             </div>
         </div>
     </div>
@@ -622,57 +555,39 @@ HTML_TEMPLATE = '''
         function setQuery(text) {
             document.getElementById('queryInput').value = text;
         }
-        
-        function convertMarkdownToHtml(text) {
-            // Convert markdown formatting to HTML for better display
-            return text
-                // Headers
-                .replace(/^### (.*$)/gim, '<h4>$1</h4>')
-                .replace(/^## (.*$)/gim, '<h3>$1</h3>')
-                .replace(/^\*\*(.*?):\*\*/gim, '<h4>$1:</h4>')
+
+        function addMessage(text, sender) {
+            const container = document.getElementById('chatContainer');
+            const message = document.createElement('div');
+            message.className = 'message ' + sender + '-message';
+            
+            if (sender === 'ai') {
+                // Simple text cleanup
+                let cleanText = text;
+                // Remove asterisks
+                while (cleanText.includes('*')) {
+                    cleanText = cleanText.replace('*', '');
+                }
+                // Replace line breaks
+                cleanText = cleanText.split('\\n').join('<br>');
                 
-                // Bold text
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                
-                // Bullet points
-                .replace(/^• (.*$)/gim, '<li>$1</li>')
-                .replace(/^- (.*$)/gim, '<li>$1</li>')
-                
-                // Wrap lists
-                .replace(/(<li>.*<\/li>)/gs, function(match) {
-                    return '<ul>' + match + '</ul>';
-                })
-                
-                // Line breaks
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>')
-                
-                // Wrap in paragraphs
-                .replace(/^(?!<[hul])/gm, '<p>')
-                .replace(/(?<!>)$/gm, '</p>')
-                
-                // Clean up extra tags
-                .replace(/<p><\/p>/g, '')
-                .replace(/<p>(<[hul])/g, '$1')
-                .replace(/(<\/[hul][^>]*>)<\/p>/g, '$1');
+                message.innerHTML = '<span>' + cleanText + '</span>';
+            } else {
+                message.innerHTML = '<span>' + text + '</span>';
+            }
+            
+            container.appendChild(message);
+            container.scrollTop = container.scrollHeight;
         }
-        
+
         async function sendQuery() {
             const input = document.getElementById('queryInput');
-            const button = document.getElementById('askButton');
             const query = input.value.trim();
             if (!query) return;
             
-            // Disable button and show loading state
-            button.disabled = true;
-            button.textContent = 'Analyzing...';
-            
-            // Add user message
             addMessage(query, 'user');
             input.value = '';
-            
-            // Add loading message
-            addMessage('🤔 Analyzing your question with CA Dashboard technical knowledge...', 'ai');
+            addMessage('🤔 Analyzing...', 'ai');
             
             try {
                 const response = await fetch('/query', {
@@ -684,34 +599,27 @@ HTML_TEMPLATE = '''
                 const data = await response.json();
                 
                 // Remove loading message
-                document.querySelector('#chatContainer .message:last-child').remove();
+                const messages = document.querySelectorAll('#chatContainer .message');
+                if (messages.length > 0) {
+                    messages[messages.length - 1].remove();
+                }
                 
-                // Add AI response with improved formatting
-                const formattedResponse = convertMarkdownToHtml(data.response);
-                addMessage(formattedResponse, 'ai');
+                // Add AI response
+                addMessage(data.response, 'ai');
                 
-                // Show detailed results
+                // Show results
                 showResults(data.schools);
                 
             } catch (error) {
-                document.querySelector('#chatContainer .message:last-child').remove();
-                addMessage('❌ Sorry, something went wrong. Please try again.', 'ai');
-            } finally {
-                // Re-enable button
-                button.disabled = false;
-                button.textContent = 'Ask';
+                const messages = document.querySelectorAll('#chatContainer .message');
+                if (messages.length > 0) {
+                    messages[messages.length - 1].remove();
+                }
+                addMessage('❌ Error occurred', 'ai');
+                console.error(error);
             }
         }
-        
-        function addMessage(text, sender) {
-            const container = document.getElementById('chatContainer');
-            const message = document.createElement('div');
-            message.className = `message ${sender}-message`;
-            message.innerHTML = `<span>${text}</span>`;
-            container.appendChild(message);
-            container.scrollTop = container.scrollHeight;
-        }
-        
+
         function showResults(schools) {
             const resultsDiv = document.getElementById('results');
             if (!schools || schools.length === 0) {
@@ -719,138 +627,16 @@ HTML_TEMPLATE = '''
                 return;
             }
             
-            let html = `<h3>📊 Detailed Results (${schools.length} schools)</h3>`;
+            let html = '<h3>📊 Results (' + schools.length + ' schools)</h3>';
             
-            schools.slice(0, 15).forEach(school => {
-                const overallIndicators = school.dashboard_indicators || {};
-                const studentGroups = school.student_groups || {};
-                
-                // Overall performance badges
-                let overallBadges = '';
-                Object.keys(overallIndicators).forEach(indicator => {
-                    const data = overallIndicators[indicator];
-                    if (data && data.status && data.status !== 'Unknown') {
-                        const label = formatIndicatorLabel(indicator);
-                        const value = data.rate || data.points_below_standard || 0;
-                        const tooltip = formatTooltip(indicator, data.status, value);
-                        overallBadges += `<span class="status-badge ${data.status}" title="${tooltip}">${label}: ${data.status}</span>`;
-                    }
-                });
-                
-                // Student groups with issues
-                let studentGroupsHtml = '';
-                Object.keys(studentGroups).forEach(groupCode => {
-                    if (groupCode !== 'ALL') {
-                        const groupData = studentGroups[groupCode];
-                        const groupName = getGroupName(groupCode, groupData);
-                        
-                        let groupBadges = '';
-                        let hasIssues = false;
-                        
-                        Object.keys(groupData).forEach(indicator => {
-                            const data = groupData[indicator];
-                            if (data && data.status && ['Red', 'Orange'].includes(data.status)) {
-                                const label = formatIndicatorLabel(indicator);
-                                const value = data.rate || data.points_below_standard || 0;
-                                const tooltip = formatTooltip(indicator, data.status, value);
-                                groupBadges += `<span class="status-badge ${data.status}" title="${tooltip}">${label}: ${data.status}</span>`;
-                                hasIssues = true;
-                            }
-                        });
-                        
-                        if (hasIssues) {
-                            studentGroupsHtml += `
-                                <div class="student-group">
-                                    <div class="student-group-name">${groupName}</div>
-                                    ${groupBadges}
-                                </div>
-                            `;
-                        }
-                    }
-                });
-                
-                html += `
-                    <div class="school-card">
-                        <div class="school-name">${school.school_name}</div>
-                        <div class="district-name">${school.district_name}</div>
-                        <div class="performance-section">
-                            <div class="performance-label">Overall Performance:</div>
-                            ${overallBadges || '<span style="color: #666; font-style: italic;">No data available</span>'}
-                        </div>
-                        ${studentGroupsHtml}
-                    </div>
-                `;
+            schools.slice(0, 10).forEach(function(school) {
+                html += '<div class="school-card">';
+                html += '<div class="school-name">' + school.school_name + '</div>';
+                html += '<div class="district-name">' + school.district_name + '</div>';
+                html += '</div>';
             });
             
-            if (schools.length > 15) {
-                html += `
-                    <div class="school-card" style="text-align: center; color: #666; font-style: italic;">
-                        ... and ${schools.length - 15} more schools. Refine your search for more specific results.
-                    </div>
-                `;
-            }
-            
             resultsDiv.innerHTML = html;
-        }
-        
-        function formatIndicatorLabel(indicator) {
-            const labels = {
-                'chronic_absenteeism': 'Chronic Absences',
-                'ela_performance': 'ELA',
-                'math_performance': 'Math',
-                'english_learner_progress': 'EL Progress',
-                'suspension_rate': 'Suspensions',
-                'college_career': 'College/Career'
-            };
-            return labels[indicator] || indicator.replace('_', ' ').toUpperCase();
-        }
-
-        function formatTooltip(indicator, status, value) {
-            if (indicator === 'chronic_absenteeism') {
-                return `${value.toFixed(1)}% of students chronically absent (≥10% days missed)`;
-            } else if (indicator === 'suspension_rate') {
-                return `${value.toFixed(1)}% of students suspended (≥1 full day aggregate)`;
-            } else if (indicator === 'college_career') {
-                return `${value.toFixed(1)}% of graduates college/career prepared`;
-            } else if (indicator.includes('performance')) {
-                const subject = indicator.includes('ela') ? 'ELA' : 'Math';
-                if (value >= 0) {
-                    return `${value.toFixed(1)} points above ${subject} standard`;
-                } else {
-                    return `${Math.abs(value).toFixed(1)} points below ${subject} standard`;
-                }
-            } else if (indicator === 'english_learner_progress') {
-                return `${value.toFixed(1)}% of English learners making progress toward proficiency`;
-            }
-            return `${status} performance level`;
-        }
-        
-        function getGroupName(groupCode, groupData) {
-            // Try to get name from data first
-            for (let indicator in groupData) {
-                if (groupData[indicator] && groupData[indicator].student_group_name) {
-                    return groupData[indicator].student_group_name;
-                }
-            }
-            
-            // Fallback to code mapping
-            const groupNames = {
-                'AA': 'Black/African American',
-                'AI': 'American Indian',
-                'AS': 'Asian',
-                'FI': 'Filipino',
-                'HI': 'Hispanic/Latino',
-                'PI': 'Pacific Islander',
-                'WH': 'White',
-                'MR': 'Two or More Races',
-                'EL': 'English Learners',
-                'LTEL': 'Long-Term English Learners',
-                'SED': 'Socioeconomically Disadvantaged',
-                'SWD': 'Students with Disabilities',
-                'HOM': 'Homeless',
-                'FOS': 'Foster Youth'
-            };
-            return groupNames[groupCode] || groupCode;
         }
     </script>
 </body>
@@ -1262,4 +1048,4 @@ def test_query_simple():
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 8080))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)
