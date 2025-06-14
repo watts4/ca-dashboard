@@ -49,10 +49,14 @@ def analyze_query_with_gemini(user_query: str) -> Dict[str, Any]:
     system_prompt = """
 You are an expert in California School Dashboard data analysis. Parse the user's natural language query and extract structured information.
 
-AVAILABLE DATA INDICATORS (only these 3 exist in the database):
+AVAILABLE DATA INDICATORS (all 7 indicators in the database):
 1. chronic_absenteeism - Percentage of students absent 10%+ of school days
 2. ela_performance - ELA test scores (Distance from Standard - negative = below, positive = above)  
 3. math_performance - Math test scores (Distance from Standard - negative = below, positive = above)
+4. suspension_rate - Percentage of students suspended
+5. college_career - College/Career Indicator (CCI) - percentage prepared for college/career
+6. graduation_rate - Percentage of students graduating
+7. english_learner_progress - English Learner Progress Indicator (ELPI) - progress of English learners
 
 AVAILABLE STUDENT GROUPS:
 - ALL (All Students)
@@ -187,16 +191,20 @@ def parse_query_with_patterns(user_query: str) -> Dict[str, Any]:
     
     if any(word in query_lower for word in ["math", "mathematics", "arithmetic"]):
         parsed["indicators"].append("math_performance")
+        
+        # Add these lines after the existing math_performance check:
+    if any(word in query_lower for word in ["suspension", "discipline", "suspended"]):
+        parsed["indicators"].append("suspension_rate")
+
+    if any(word in query_lower for word in ["college", "career", "cci", "prepared"]):
+        parsed["indicators"].append("college_career")
+
+    if any(word in query_lower for word in ["graduation", "graduate", "graduating"]):
+        parsed["indicators"].append("graduation_rate")
+
+    if any(word in query_lower for word in ["english learner progress", "elpi", "elpac", "el progress"]):
+        parsed["indicators"].append("english_learner_progress")
     
-    # Check for unavailable data
-    unavailable_terms = [
-        "suspension", "discipline", "college", "career", "graduation", 
-        "english learner progress", "elpi", "elpac"
-    ]
-    
-    if any(term in query_lower for term in unavailable_terms):
-        parsed["data_availability"] = "not_available"
-        parsed["explanation"] = "Requested data (suspensions, college/career, EL progress) is not available in the current dataset. Available indicators: chronic absenteeism, ELA performance, math performance."
     
     # Context-based color inference
     problem_phrases = ["lowest", "worst", "struggling", "red", "problem", "concerning"]
@@ -240,7 +248,7 @@ def build_mongodb_query(parsed_query):
                         print(f"DEBUG - Added condition: {condition}")
                 else:
                     # All indicators for specific groups
-                    for indicator in ["chronic_absenteeism", "ela_performance", "math_performance"]:
+                    for indicator in ["chronic_absenteeism", "ela_performance", "math_performance", "suspension_rate", "college_career", "graduation_rate", "english_learner_progress"]:
                         condition = {f"student_groups.{student_group}.{indicator}.status": {"$in": colors}}
                         color_conditions.append(condition)
                         print(f"DEBUG - Added condition: {condition}")
@@ -253,7 +261,7 @@ def build_mongodb_query(parsed_query):
                     print(f"DEBUG - Added overall condition: {condition}")
             else:
                 # All indicators overall
-                for indicator in ["chronic_absenteeism", "ela_performance", "math_performance"]:
+                for indicator in ["chronic_absenteeism", "ela_performance", "math_performance", "suspension_rate", "college_career", "graduation_rate", "english_learner_progress"]:
                     condition = {f"dashboard_indicators.{indicator}.status": {"$in": colors}}
                     color_conditions.append(condition)
                     print(f"DEBUG - Added overall condition: {condition}")
@@ -261,7 +269,40 @@ def build_mongodb_query(parsed_query):
         if color_conditions:
             query_filter["$or"] = color_conditions
             print(f"DEBUG - Final $or conditions: {len(color_conditions)} conditions")
-    
+
+    elif parsed_query.get("indicators"):
+        # NEW: Handle case where indicators are specified but no colors
+        print("DEBUG - No colors specified, but indicators found - showing all schools with these indicators")
+        indicator_conditions = []
+        
+        if parsed_query.get("student_groups"):
+            # Look for indicators in specific student groups
+            for student_group in parsed_query["student_groups"]:
+                for indicator in parsed_query["indicators"]:
+                    condition = {f"student_groups.{student_group}.{indicator}": {"$exists": True}}
+                    indicator_conditions.append(condition)
+                    print(f"DEBUG - Added student group existence condition: {condition}")
+        else:
+            # Look for indicators in overall dashboard
+            for indicator in parsed_query["indicators"]:
+                if indicator == "english_learner_progress":
+                    # ELPI data is only in the EL student group, not dashboard_indicators
+                    condition = {f"student_groups.EL.{indicator}": {"$exists": True}}
+                    indicator_conditions.append(condition)
+                    print(f"DEBUG - Added EL group existence condition: {condition}")
+                else:
+                    condition = {f"dashboard_indicators.{indicator}": {"$exists": True}}
+                    indicator_conditions.append(condition)
+                    print(f"DEBUG - Added dashboard existence condition: {condition}")
+
+        
+        if indicator_conditions:
+            if len(indicator_conditions) == 1:
+                query_filter.update(indicator_conditions[0])
+            else:
+                query_filter["$or"] = indicator_conditions
+            print(f"DEBUG - Added indicator existence filters: {len(indicator_conditions)} conditions")
+
     print(f"DEBUG - Final MongoDB query: {query_filter}")
     return query_filter
 
@@ -371,7 +412,14 @@ def generate_template_response(user_query: str, results: List[Dict], parsed_quer
                     elif indicator == "math_performance":
                         direction = "above" if value >= 0 else "below"
                         performance_items.append(f"Math: **{status}** ({abs(value):.1f} pts {direction} standard)")
-            
+                    elif indicator == "english_learner_progress":
+                        performance_items.append(f"English Learner Progress: **{status}** ({value:.1f}%)")
+                    elif indicator == "suspension_rate":
+                        performance_items.append(f"Suspension Rate: **{status}** ({value:.1f}%)")
+                    elif indicator == "college_career":
+                        performance_items.append(f"College/Career Ready: **{status}** ({value:.1f}%)")
+                    elif indicator == "graduation_rate":
+                        performance_items.append(f"Graduation Rate: **{status}** ({value:.1f}%)")
             if performance_items:
                 response_parts.append("\n**Overall Performance:**")
                 for item in performance_items:
@@ -594,8 +642,28 @@ HTML_TEMPLATE = '''
         .view-toggle { margin-bottom: 15px; }
         .view-toggle button { padding: 8px 12px; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; }
         .view-toggle button.active { background: #1976d2; color: white; border-color: #1976d2; }
-        .student-group-selector { margin-bottom: 15px; font-size: 14px; }
-        .student-group-selector label { margin-right: 15px; }
+        .student-group-selector { 
+    margin-bottom: 15px; 
+    font-size: 14px;
+}
+.student-group-selector > strong {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+.student-group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px 15px;
+    align-items: center;
+}
+.student-group-grid label {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
         .results-footer { text-align: center; margin-top: 15px; color: #666; font-style: italic; font-size: 13px; }
 
         /* Empty States */
@@ -909,11 +977,19 @@ HTML_TEMPLATE = '''
     }
 
     const allIndicators = new Set();
-    const allStudentGroups = new Set(['ALL']);
-    schools.forEach(school => {
-        Object.keys(school.dashboard_indicators || {}).forEach(ind => allIndicators.add(ind));
-        Object.keys(school.student_groups || {}).forEach(grp => allStudentGroups.add(grp));
+const allStudentGroups = new Set(['ALL']);
+schools.forEach(school => {
+    // Add indicators from dashboard_indicators
+    Object.keys(school.dashboard_indicators || {}).forEach(ind => allIndicators.add(ind));
+    
+    // Add student groups
+    Object.keys(school.student_groups || {}).forEach(grp => allStudentGroups.add(grp));
+    
+    // IMPORTANT: Also check student group data for additional indicators
+    Object.values(school.student_groups || {}).forEach(groupData => {
+        Object.keys(groupData || {}).forEach(ind => allIndicators.add(ind));
     });
+});
     const indicators = Array.from(allIndicators);
     const studentGroups = Array.from(allStudentGroups);
     
@@ -926,13 +1002,14 @@ HTML_TEMPLATE = '''
              </div>`;
 
     if (studentGroups.length > 1) {
-        html += '<div class="student-group-selector"><strong>View Performance For: </strong>';
-        studentGroups.forEach(group => {
-            const checked = group === 'ALL' ? 'checked' : '';
-            html += `<label><input type="radio" name="studentGroup" value="${group}" ${checked}> ${getStudentGroupName(group)}</label>`;
-        });
-        html += '</div>';
-    }
+    html += '<div class="student-group-selector"><strong>View Performance For:</strong>';
+    html += '<div class="student-group-grid">';
+    studentGroups.forEach(group => {
+        const checked = group === 'ALL' ? 'checked' : '';
+        html += `<label><input type="radio" name="studentGroup" value="${group}" ${checked}> ${getStudentGroupName(group)}</label>`;
+    });
+    html += '</div></div>';
+}
 
     html += `<div id="tableView" class="performance-table">${generateTableView(schools, indicators, 'ALL')}</div>`;
     
@@ -1044,7 +1121,23 @@ def handle_query():
     # Add debug logging for results
     print(f"DEBUG - Query returned {len(results)} schools")
     if len(results) > 0:
-        print(f"DEBUG - First school: {results[0].get('school_name', 'Unknown')} in {results[0].get('district_name', 'Unknown')}")
+        first_school = results[0]
+        print(f"DEBUG - First school: {first_school.get('school_name', 'Unknown')} in {first_school.get('district_name', 'Unknown')}")
+        print(f"DEBUG - Dashboard indicators: {list(first_school.get('dashboard_indicators', {}).keys())}")
+        print(f"DEBUG - Student groups: {list(first_school.get('student_groups', {}).keys())}")
+    
+        # Check if ELPI data exists
+        dashboard_indicators = first_school.get('dashboard_indicators', {})
+        if 'english_learner_progress' in dashboard_indicators:
+            print(f"DEBUG - ELPI in dashboard: {dashboard_indicators['english_learner_progress']}")
+        else:
+            print("DEBUG - ELPI NOT found in dashboard indicators")
+        
+        # Check student groups for ELPI
+        student_groups = first_school.get('student_groups', {})
+        for group_name, group_data in student_groups.items():
+            if 'english_learner_progress' in group_data:
+                print(f"DEBUG - ELPI found in group {group_name}: {group_data['english_learner_progress']}")
     else:
         print("DEBUG - No schools found matching criteria")
 
