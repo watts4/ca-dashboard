@@ -427,10 +427,8 @@ def get_student_group_name(short_code):
 # ==============================================================================
 # ===                           HTML TEMPLATE                                ===
 # ==============================================================================
-# The primary changes are in the HTML and JavaScript below.
-# 1. `onclick="..."` has been removed from the example queries.
-# 2. They now use `data-query="..."` to store the query text.
-# 3. The JavaScript now adds event listeners instead of relying on onclick.
+# The script section below has been fully restored to parse the JSON data
+# and render it as proper HTML tables and cards.
 # ==============================================================================
 
 HTML_TEMPLATE = '''
@@ -444,170 +442,211 @@ HTML_TEMPLATE = '''
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
             max-width: 1200px; margin: 0 auto; padding: 20px; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f0f2f5;
             min-height: 100vh;
         }
         .container {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
         }
         .header { 
             text-align: center; 
             color: white; 
-            padding: 30px; 
+            padding: 20px; 
             background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            flex-shrink: 0;
         }
-        .header h1 { margin: 0 0 10px 0; font-size: 2.2em; font-weight: 300; }
-        .header p { margin: 0; opacity: 0.9; font-size: 1.1em; }
+        .header h1 { margin: 0 0 5px 0; font-size: 1.8em; font-weight: 500; }
+        .header p { margin: 0; opacity: 0.9; font-size: 1em; }
         
-        .chat-container { 
-            height: 400px; overflow-y: auto; padding: 25px; 
-            background: #fafafa; border-bottom: 1px solid #e0e0e0;
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow: hidden;
         }
-        .message { margin-bottom: 20px; }
-        .user-message { text-align: right; }
+
+        .chat-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 25px;
+        }
+        .chat-container { 
+            background: #fff;
+        }
+        .message { margin-bottom: 20px; display: flex; }
+        .user-message { justify-content: flex-end; }
         .user-message span { 
             background: linear-gradient(135deg, #1976d2, #1565c0); 
             color: white; padding: 12px 16px; border-radius: 18px 18px 4px 18px; 
-            display: inline-block; max-width: 70%; box-shadow: 0 2px 8px rgba(25,118,210,0.3);
+            max-width: 75%; box-shadow: 0 2px 8px rgba(25,118,210,0.3);
         }
+        .ai-message { justify-content: flex-start; }
         .ai-message span { 
-            background: white; border: 1px solid #e0e0e0; 
+            background: #f0f2f5; border: 1px solid #e8e8e8; 
             padding: 12px 16px; border-radius: 18px 18px 18px 4px; 
-            display: inline-block; max-width: 85%; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            max-width: 85%;
             line-height: 1.5;
         }
         
         .examples { 
-            background: white; padding: 25px; border-bottom: 1px solid #e0e0e0;
+            background: #fafafa; padding: 20px 25px; border-top: 1px solid #e8e8e8;
+            flex-shrink: 0;
         }
-        .examples h3 { margin-top: 0; color: #1976d2; font-weight: 500; }
-        .example-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+        .examples h3 { margin: 0 0 10px 0; color: #333; font-weight: 500; font-size: 1em; }
+        .example-grid { display: flex; flex-wrap: wrap; gap: 8px; }
         .example-query { 
-            background: #f8f9fa; padding: 12px 16px; border-radius: 8px; 
-            cursor: pointer; border: 1px solid #e9ecef; transition: all 0.2s;
-            font-size: 14px;
+            background: #e9ecef; color: #495057; padding: 8px 12px; border-radius: 16px; 
+            cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
+            font-size: 13px;
         }
         .example-query:hover { 
-            background: #e3f2fd; border-color: #1976d2; transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(25,118,210,0.15);
+            background: #e3f2fd; border-color: #1976d2; color: #1976d2;
         }
         
-        .input-section { padding: 25px; background: white; }
-        .input-container { display: flex; gap: 12px; margin-bottom: 20px; }
+        .input-section { 
+            padding: 15px 25px; background: white; border-top: 1px solid #e8e8e8;
+            flex-shrink: 0;
+        }
+        .input-container { display: flex; gap: 12px; }
         .input-container input { 
-            flex: 1; padding: 16px; border: 2px solid #e0e0e0; border-radius: 12px; 
-            font-size: 16px; transition: border-color 0.2s;
+            flex: 1; padding: 14px; border: 1px solid #ddd; border-radius: 8px; 
+            font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s;
         }
         .input-container input:focus { 
-            outline: none; border-color: #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,0.1);
+            outline: none; border-color: #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,0.2);
         }
         .input-container button { 
-            padding: 16px 32px; background: linear-gradient(135deg, #1976d2, #1565c0); 
-            color: white; border: none; border-radius: 12px; cursor: pointer; 
-            font-size: 16px; font-weight: 500; transition: all 0.2s;
+            padding: 14px 28px; background: #1976d2; 
+            color: white; border: none; border-radius: 8px; cursor: pointer; 
+            font-size: 15px; font-weight: 500; transition: background-color 0.2s;
         }
-        .input-container button:hover { 
-            transform: translateY(-1px); box-shadow: 0 8px 20px rgba(25,118,210,0.3);
-        }
+        .input-container button:hover { background-color: #1565c0; }
         
-        .results { margin-top: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .results { 
+            background: #f8f9fa;
+            border-top: 1px solid #e8e8e8;
+            padding: 20px;
+            overflow-y: auto;
+            flex-shrink: 0; /* Let it take space but not grow */
+            max-height: 50vh; /* Don't let it take over the whole screen */
+        }
         .results h3 { 
-            padding: 20px 25px; margin: 0; background: #1976d2; color: white; 
-            border-radius: 12px 12px 0 0; font-weight: 500;
+            padding-bottom: 15px; margin: 0 0 15px 0; font-weight: 500;
+            border-bottom: 1px solid #ddd; color: #333;
         }
-        .school-card { 
-            border-bottom: 1px solid #e9ecef; padding: 20px 25px; transition: background 0.2s;
-        }
-        .school-card:hover { background: #f8f9fa; }
-        .school-card:last-child { border-bottom: none; border-radius: 0 0 12px 12px; }
-        .school-name { font-weight: 600; color: #1976d2; font-size: 18px; margin-bottom: 5px; }
-        .district-name { color: #666; margin-bottom: 15px; font-size: 14px; }
+        .performance-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .performance-table th, .performance-table td { padding: 10px 12px; border: 1px solid #ddd; text-align: left; }
+        .performance-table th { background-color: #f0f2f5; font-weight: 500; }
+        .school-name-cell { font-weight: 500; }
+        .color-cell { text-align: center; font-weight: 500; border-radius: 4px; padding: 6px; color: white; }
+        /* Color styles */
+        .color-cell.Blue { background-color: #1e88e5; }
+        .color-cell.Green { background-color: #43a047; }
+        .color-cell.Yellow { background-color: #fdd835; color: #333; }
+        .color-cell.Orange { background-color: #fb8c00; }
+        .color-cell.Red { background-color: #e53935; }
+        .color-cell.No-Data { background-color: #bdbdbd; }
+        .view-toggle { margin-bottom: 15px; }
+        .view-toggle button { padding: 8px 12px; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; }
+        .view-toggle button.active { background: #1976d2; color: white; border-color: #1976d2; }
+        .student-group-selector { margin-bottom: 15px; font-size: 14px; }
+        .student-group-selector label { margin-right: 15px; }
+        .results-footer { text-align: center; margin-top: 15px; color: #666; font-style: italic; font-size: 13px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🏫 California Schools AI Dashboard</h1>
-            <p>Technical analysis of CA Dashboard data with student group breakdowns</p>
+            <p>Explore school performance data using natural language</p>
         </div>
         
-        <div class="examples" id="examplesContainer">
-            <h3>💡 Try These Example Queries:</h3>
-            <div class="example-grid">
-                <!-- *** HTML CHANGE: Removed 'onclick' and added 'data-query' *** -->
-                <div class="example-query" data-query="What are the red and orange areas for Sunnyvale School District?">What are the red and orange areas for Sunnyvale School District?</div>
-                <div class="example-query" data-query="Which student groups are struggling with math in San Miguel Elementary?">Which student groups are struggling with math in San Miguel Elementary?</div>
-                <div class="example-query" data-query="Show me chronic absenteeism issues for Hispanic students">Show me chronic absenteeism issues for Hispanic students</div>
-                <div class="example-query" data-query="Which school in Sunnyvale did the best with Hispanic students in math?">Which school in Sunnyvale did the best with Hispanic students in math?</div>
+        <div class="main-content">
+            <div class="chat-area">
+                <div class="chat-container" id="chatContainer">
+                    <div class="message ai-message">
+                        <span>👋 Hi! I can help you explore California school dashboard data. Ask me anything about school performance, student groups, or specific districts!</span>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="chat-container" id="chatContainer">
-            <div class="message ai-message">
-                <span>👋 Hi! I can help you explore California school dashboard data. Ask me anything about school performance, student groups, or specific districts!</span>
+            <div class="results" id="results" style="display:none;"></div>
+            <div class="examples" id="examplesContainer">
+                <h3>💡 Try an example:</h3>
+                <div class="example-grid">
+                    <div class="example-query" data-query="Which schools in Sunnyvale have red or orange math performance for Hispanic students?">Schools in Sunnyvale with math issues for Hispanic students</div>
+                    <div class="example-query" data-query="Show me chronic absenteeism issues for English Learners in Oakland">Absenteeism for English Learners in Oakland</div>
+                    <div class="example-query" data-query="Find schools in San Francisco with Blue or Green ELA performance">High-performing ELA schools in SF</div>
+                </div>
             </div>
-        </div>
-        
-        <div class="input-section">
-            <div class="input-container">
-                <input id="queryInput" type="text" placeholder="Ask about California schools...">
-                <button id="sendQueryBtn">Ask</button>
+            <div class="input-section">
+                <div class="input-container">
+                    <input id="queryInput" type="text" placeholder="Ask about California schools...">
+                    <button id="sendQueryBtn">Ask</button>
+                </div>
             </div>
         </div>
     </div>
-    
-    <div class="results" id="results"></div>
 
     <script>
-    /**
-     * Main function that runs after the page is fully loaded.
-     * It sets up all event listeners for the application, avoiding the
-     * need for any 'onclick' attributes in the HTML. This is the correct
-     * and modern way to handle user interactions.
-     */
+    // ==============================================================================
+    // ===                           JAVASCRIPT CORE                            ===
+    // ==============================================================================
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM fully loaded. Setting up event listeners.");
 
         const queryInput = document.getElementById('queryInput');
         const sendQueryBtn = document.getElementById('sendQueryBtn');
         const examplesContainer = document.getElementById('examplesContainer');
+        const resultsDiv = document.getElementById('results');
 
-        // --- Event Listener for the "Ask" Button ---
         if (sendQueryBtn) {
             sendQueryBtn.addEventListener('click', sendQuery);
         }
 
-        // --- Event Listener for the Enter Key in the Input Box ---
         if (queryInput) {
             queryInput.addEventListener('keypress', function(event) {
                 if (event.key === 'Enter') {
-                    event.preventDefault(); // Stop the default form submission
+                    event.preventDefault();
                     sendQuery();
                 }
             });
         }
 
-        // --- Event Listener for Example Queries (Event Delegation) ---
-        // *** JS FIX: This now correctly listens on the '.examples' div ***
         if (examplesContainer) {
             examplesContainer.addEventListener('click', function(event) {
-                // Check if the clicked element is an example query
                 if (event.target && event.target.matches('.example-query')) {
                     const queryText = event.target.dataset.query;
                     if (queryText) {
                         setQuery(queryText);
+                        sendQuery(); // Optionally send the query right away
                     }
                 }
             });
         }
-    });
 
-    // -------------------------------------------------------------------------
-    // -- Core Application Functions -------------------------------------------
-    // -------------------------------------------------------------------------
+        // Event delegation for dynamically created results content
+        if(resultsDiv) {
+            resultsDiv.addEventListener('click', function(event) {
+                const target = event.target;
+                if (target.matches('.view-toggle button')) {
+                    const viewType = target.dataset.view;
+                    if(viewType) toggleView(viewType, target);
+                }
+            });
+            resultsDiv.addEventListener('change', function(event) {
+                const target = event.target;
+                if(target.matches('input[name="studentGroup"]')) {
+                    updateTableView();
+                }
+            });
+        }
+    });
 
     function setQuery(text) {
         document.getElementById('queryInput').value = text;
@@ -621,6 +660,7 @@ HTML_TEMPLATE = '''
         addMessage(query, 'user');
         input.value = '';
         addMessage('🤔 Analyzing...', 'ai');
+        document.getElementById('results').style.display = 'none'; // Hide old results
 
         fetch('/query', {
             method: 'POST',
@@ -638,9 +678,11 @@ HTML_TEMPLATE = '''
                 lastMessage.remove();
             }
             addMessage(data.response, 'ai');
-            // This is a placeholder for where you would display detailed results
-            // For now, we clear the results div. Your `showResults` function would go here.
-            document.getElementById('results').innerHTML = JSON.stringify(data.schools, null, 2);
+            
+            // *** THIS IS THE FIX: Call showResults instead of displaying raw JSON ***
+            if (data.schools && data.schools.length > 0) {
+                showResults(data.schools);
+            }
         })
         .catch(error => {
             const messages = document.querySelectorAll('#chatContainer .message');
@@ -657,20 +699,115 @@ HTML_TEMPLATE = '''
         const container = document.getElementById('chatContainer');
         const message = document.createElement('div');
         message.className = `message ${sender}-message`;
-
         let formattedText = text;
         if (sender === 'ai') {
-            // Basic markdown formatting
             formattedText = formattedText
                 .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
-                .replace(/\\*/g, '')
-                .replace(/\\n|\\n/g, '<br>')
-                .replace(/^- /gm, '• ');
+                .replace(/\\n/g, '<br>');
         }
         message.innerHTML = `<span>${formattedText}</span>`;
         container.appendChild(message);
-        container.scrollTop = container.scrollHeight;
+        // Scroll to the new message
+        document.querySelector('.chat-area').scrollTop = document.querySelector('.chat-area').scrollHeight;
     }
+
+    // --- Functions to Render Results ---
+    function showResults(schools) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.style.display = 'block';
+
+        const allIndicators = new Set();
+        const allStudentGroups = new Set(['ALL']);
+        schools.forEach(school => {
+            Object.keys(school.dashboard_indicators || {}).forEach(ind => allIndicators.add(ind));
+            Object.keys(school.student_groups || {}).forEach(grp => allStudentGroups.add(grp));
+        });
+        const indicators = Array.from(allIndicators);
+        const studentGroups = Array.from(allStudentGroups);
+        
+        let html = `<h3>📊 Detailed Results (${schools.length} schools)</h3>`;
+        html += `<div class="view-toggle">
+                    <button class="active" data-view="table">Table View</button>
+                 </div>`;
+
+        if (studentGroups.length > 1) {
+            html += '<div class="student-group-selector"><strong>View Performance For: </strong>';
+            studentGroups.forEach(group => {
+                const checked = group === 'ALL' ? 'checked' : '';
+                html += `<label><input type="radio" name="studentGroup" value="${group}" ${checked}> ${getStudentGroupName(group)}</label>`;
+            });
+            html += '</div>';
+        }
+
+        html += `<div id="tableView" class="performance-table">${generateTableView(schools, indicators, 'ALL')}</div>`;
+        resultsDiv.innerHTML = html;
+    }
+
+    function toggleView(viewType, buttonElement) {
+        document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+        buttonElement.classList.add('active');
+        // Future: add card view logic here
+    }
+
+    function updateTableView() {
+        const selectedGroup = document.querySelector('input[name="studentGroup"]:checked').value;
+        const schools = window.currentSchools;
+        const indicators = window.currentIndicators;
+        if (schools && indicators) {
+            document.getElementById('tableView').innerHTML = generateTableView(schools, indicators, selectedGroup);
+        }
+    }
+
+    function generateTableView(schools, indicators, selectedGroup) {
+        window.currentSchools = schools; // Cache for updates
+        window.currentIndicators = indicators;
+
+        let tableHtml = '<table><thead><tr><th>School</th>';
+        indicators.forEach(indicator => tableHtml += `<th>${formatIndicatorLabel(indicator)}</th>`);
+        tableHtml += '</tr></thead><tbody>';
+
+        schools.slice(0, 50).forEach(school => {
+            tableHtml += `<tr><td class="school-name-cell">${school.school_name}</td>`;
+            indicators.forEach(indicator => {
+                let data = (selectedGroup === 'ALL')
+                    ? (school.dashboard_indicators || {})[indicator]
+                    : ((school.student_groups || {})[selectedGroup] || {})[indicator];
+
+                const status = data?.status || 'No Data';
+                const value = data?.rate ?? data?.points_below_standard;
+                const displayStatus = status.replace(/\\s/g, '-');
+                const tooltip = data ? formatTooltip(indicator, status, value || 0) : 'No data available';
+                tableHtml += `<td><div class="color-cell ${displayStatus}" title="${tooltip}">${status}</div></td>`;
+            });
+            tableHtml += '</tr>';
+        });
+
+        tableHtml += '</tbody></table>';
+        if (schools.length > 50) {
+            tableHtml += `<p class="results-footer">Showing first 50 of ${schools.length} total results.</p>`;
+        }
+        return tableHtml;
+    }
+
+    // --- Formatting Helpers ---
+    function formatIndicatorLabel(indicator) {
+        const labels = {'chronic_absenteeism': 'Attendance', 'ela_performance': 'ELA', 'math_performance': 'Math', 'suspension_rate': 'Suspension'};
+        return labels[indicator] || indicator.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase());
+    }
+
+    function getStudentGroupName(short_code) {
+        const map = {'ALL':'All Students','AA':'Black/African American','AI':'American Indian','AS':'Asian','FI':'Filipino','HI':'Hispanic/Latino','PI':'Pacific Islander','WH':'White','MR':'Two or More Races','EL':'English Learners','SED':'Socioeconomically Disadvantaged','SWD':'Students with Disabilities','HOM':'Homeless','FOS':'Foster Youth'};
+        return map[short_code] || short_code;
+    }
+
+    function formatTooltip(indicator, status, value) {
+        if (indicator.includes('performance')) {
+            const direction = value >= 0 ? 'above' : 'below';
+            return `${status}: ${Math.abs(value).toFixed(1)} points ${direction} standard`;
+        }
+        return `${status}: ${value.toFixed(1)}%`;
+    }
+
     </script>
 </body>
 </html>
