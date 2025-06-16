@@ -640,6 +640,232 @@ HTML_TEMPLATE = '''
         .performance-table th { background-color: #f0f2f5; font-weight: 500; }
         .school-name-cell { font-weight: 500; }
         .color-cell { text-align: center; font-weight: 500; border-radius: 4px; padding: 6px; color: white; }
+        .performance-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.color-cell {
+    text-align: center; 
+    font-weight: 500; 
+    border-radius: 4px; 
+    padding: 6px 8px; 
+    color: white;
+    min-width: 70px;
+    font-size: 13px;
+}
+
+.performance-value {
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    min-height: 14px;
+    line-height: 1.2;
+}
+
+.performance-above {
+    color: #2e7d32; /* Green for above standard */
+}
+
+.performance-below {
+    color: #d32f2f; /* Red for below standard */
+}
+
+.performance-rate {
+    color: #1976d2; /* Blue for percentage rates */
+}
+
+.performance-na {
+    color: #757575; /* Gray for no data */
+}
+
+.trend-info {
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    min-height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fixed arrow colors */
+.trend-good {
+    color: #2e7d32 !important; /* Dark green for good changes */
+}
+
+.trend-bad {
+    color: #c62828 !important; /* Dark red for bad changes */
+}
+
+.trend-stable {
+    color: #757575 !important; /* Gray for no change */
+}
+
+/* Adjust table cell padding to accommodate three-line content */
+.performance-table td {
+    padding: 8px 6px;
+    vertical-align: middle;
+    min-width: 95px;
+}
+
+/* Make school name column wider since other columns are now wider */
+.school-name-cell {
+    font-weight: 500;
+    min-width: 180px;
+    max-width: 220px;
+    word-wrap: break-word;
+}
+
+/* ADD these - they're completely new */
+.filter-system {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.filter-section {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.filter-section:last-child {
+    border-bottom: none;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    user-select: none;
+}
+
+.filter-header:hover {
+    background: #f1f3f4;
+}
+
+.filter-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.filter-arrow {
+    color: #666;
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+/* Color Filter Grid */
+.color-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.color-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafafa;
+}
+
+.color-filter-item:hover {
+    border-color: #1976d2;
+    background: #f3f8ff;
+}
+
+.color-filter-item input[type="checkbox"] {
+    margin: 0;
+}
+
+.color-sample {
+    font-size: 16px;
+    font-weight: 600;
+    min-width: 60px;
+}
+
+.color-description {
+    font-size: 12px;
+    color: #666;
+    flex-grow: 1;
+}
+
+/* Color sample styles */
+.blue-sample { color: #1e88e5; }
+.green-sample { color: #43a047; }
+.yellow-sample { color: #fdd835; }
+.orange-sample { color: #fb8c00; }
+.red-sample { color: #e53935; }
+
+/* Filter Action Buttons */
+.color-filter-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.filter-action-btn {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.filter-action-btn:hover {
+    background: #f0f2f5;
+    border-color: #1976d2;
+}
+
+.problems-btn {
+    background: #fff3e0;
+    border-color: #fb8c00;
+    color: #ef6c00;
+}
+
+.problems-btn:hover {
+    background: #ffe0b2;
+    border-color: #f57c00;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .color-filter-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .student-group-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .color-filter-actions {
+        flex-direction: column;
+    }
+    
+    .filter-action-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
         /* Color styles */
         .color-cell.Blue { background-color: #1e88e5; }
         .color-cell.Green { background-color: #43a047; }
@@ -650,7 +876,18 @@ HTML_TEMPLATE = '''
         .view-toggle { margin-bottom: 15px; }
         .view-toggle button { padding: 8px 12px; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; }
         .view-toggle button.active { background: #1976d2; color: white; border-color: #1976d2; }
-        .student-group-selector { 
+        .filter-content {
+    padding: 16px;
+    background: #ffffff;
+    border-top: 1px solid #f0f0f0;
+    display: block;
+}
+
+.filter-content.collapsed {
+    display: none;
+}
+
+.student-group-selector { 
     margin-bottom: 15px; 
     font-size: 14px;
 }
@@ -976,7 +1213,6 @@ HTML_TEMPLATE = '''
     }
     
     if (resultsContent) {
-        // Use !important to override any CSS that might be hiding it
         resultsContent.style.setProperty('display', 'block', 'important');
         console.log('DEBUG - Showing results content with !important');
     } else {
@@ -985,19 +1221,15 @@ HTML_TEMPLATE = '''
     }
 
     const allIndicators = new Set();
-const allStudentGroups = new Set(['ALL']);
-schools.forEach(school => {
-    // Add indicators from dashboard_indicators
-    Object.keys(school.dashboard_indicators || {}).forEach(ind => allIndicators.add(ind));
-    
-    // Add student groups
-    Object.keys(school.student_groups || {}).forEach(grp => allStudentGroups.add(grp));
-    
-    // IMPORTANT: Also check student group data for additional indicators
-    Object.values(school.student_groups || {}).forEach(groupData => {
-        Object.keys(groupData || {}).forEach(ind => allIndicators.add(ind));
+    const allStudentGroups = new Set(['ALL']);
+    schools.forEach(school => {
+        Object.keys(school.dashboard_indicators || {}).forEach(ind => allIndicators.add(ind));
+        Object.keys(school.student_groups || {}).forEach(grp => allStudentGroups.add(grp));
+        Object.values(school.student_groups || {}).forEach(groupData => {
+            Object.keys(groupData || {}).forEach(ind => allIndicators.add(ind));
+        });
     });
-});
+    
     const indicators = Array.from(allIndicators);
     const studentGroups = Array.from(allStudentGroups);
     
@@ -1009,16 +1241,75 @@ schools.forEach(school => {
                 <button class="active" data-view="table">Table View</button>
              </div>`;
 
+    // New Collapsible Filter System
+    html += '<div class="filter-system">';
+    
+    // Student Groups Filter (Collapsible)
     if (studentGroups.length > 1) {
-    html += '<div class="student-group-selector"><strong>View Performance For:</strong>';
-    html += '<div class="student-group-grid">';
-    studentGroups.forEach(group => {
-        const checked = group === 'ALL' ? 'checked' : '';
-        html += `<label><input type="radio" name="studentGroup" value="${group}" ${checked}> ${getStudentGroupName(group)}</label>`;
-    });
-    html += '</div></div>';
-}
-
+        html += `
+        <div class="filter-section">
+            <div class="filter-header" onclick="toggleFilterSection('studentGroups')">
+                <span class="filter-title">👥 Student Groups</span>
+                <span class="filter-arrow" id="studentGroupsArrow">▼</span>
+            </div>
+            <div class="filter-content" id="studentGroupsContent">
+                <div class="student-group-grid">`;
+        
+        studentGroups.forEach(group => {
+            const checked = group === 'ALL' ? 'checked' : '';
+            html += `<label><input type="radio" name="studentGroup" value="${group}" ${checked}> ${getStudentGroupName(group)}</label>`;
+        });
+        
+        html += `    </div>
+            </div>
+        </div>`;
+    }
+    
+    // Performance Colors Filter (Collapsible)
+    html += `
+    <div class="filter-section">
+        <div class="filter-header" onclick="toggleFilterSection('performanceColors')">
+            <span class="filter-title">🎨 Performance Colors</span>
+            <span class="filter-arrow" id="performanceColorsArrow">▼</span>
+        </div>
+        <div class="filter-content collapsed" id="performanceColorsContent">
+            <div class="color-filter-grid">
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Blue" onchange="updateColorFilter()">
+                    <span class="color-sample blue-sample">🔵 Blue</span>
+                    <span class="color-description">Highest Performance</span>
+                </label>
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Green" onchange="updateColorFilter()">
+                    <span class="color-sample green-sample">🟢 Green</span>
+                    <span class="color-description">Above Average</span>
+                </label>
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Yellow" onchange="updateColorFilter()">
+                    <span class="color-sample yellow-sample">🟡 Yellow</span>
+                    <span class="color-description">Average Performance</span>
+                </label>
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Orange" onchange="updateColorFilter()">
+                    <span class="color-sample orange-sample">🟠 Orange</span>
+                    <span class="color-description">Below Average</span>
+                </label>
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Red" onchange="updateColorFilter()">
+                    <span class="color-sample red-sample">🔴 Red</span>
+                    <span class="color-description">Lowest Performance</span>
+                </label>
+            </div>
+            <div class="color-filter-actions">
+                <button onclick="selectAllColors()" class="filter-action-btn">Select All</button>
+                <button onclick="clearAllColors()" class="filter-action-btn">Clear All</button>
+                <button onclick="selectProblemsOnly()" class="filter-action-btn problems-btn">Problems Only (Red + Orange)</button>
+            </div>
+        </div>
+    </div>`;
+    
+    html += '</div>'; // End filter-system
+    
     html += `<div id="tableView" class="performance-table">${generateTableView(schools, indicators, 'ALL')}</div>`;
     
     resultsContent.innerHTML = html;
@@ -1026,7 +1317,88 @@ schools.forEach(school => {
     
     updateTabBadges();
 }
+// Toggle filter section open/closed
+function toggleFilterSection(sectionId) {
+    const content = document.getElementById(sectionId + 'Content');
+    const arrow = document.getElementById(sectionId + 'Arrow');
+    
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        arrow.textContent = '▲';
+    } else {
+        content.classList.add('collapsed');
+        arrow.textContent = '▼';
+    }
+}
 
+// Color filtering functions
+function updateColorFilter() {
+    const selectedColors = Array.from(document.querySelectorAll('input[name="colorFilter"]:checked'))
+                               .map(cb => cb.value);
+    
+    const tableRows = document.querySelectorAll('.performance-table tbody tr');
+    
+    if (selectedColors.length === 0) {
+        // No colors selected = show all rows
+        tableRows.forEach(row => row.style.display = '');
+        return;
+    }
+    
+    tableRows.forEach(row => {
+        const colorCells = row.querySelectorAll('.color-cell');
+        let shouldShow = false;
+        
+        // Check if any cell in this row matches selected colors
+        colorCells.forEach(cell => {
+            const cellClasses = cell.className;
+            selectedColors.forEach(color => {
+                if (cellClasses.includes(color)) {
+                    shouldShow = true;
+                }
+            });
+        });
+        
+        row.style.display = shouldShow ? '' : 'none';
+    });
+    
+    updateVisibleRowCount();
+}
+
+function selectAllColors() {
+    document.querySelectorAll('input[name="colorFilter"]').forEach(cb => {
+        cb.checked = true;
+    });
+    updateColorFilter();
+}
+
+function clearAllColors() {
+    document.querySelectorAll('input[name="colorFilter"]').forEach(cb => {
+        cb.checked = false;
+    });
+    updateColorFilter();
+}
+
+function selectProblemsOnly() {
+    // Clear all first
+    clearAllColors();
+    // Select only Red and Orange
+    document.querySelector('input[name="colorFilter"][value="Red"]').checked = true;
+    document.querySelector('input[name="colorFilter"][value="Orange"]').checked = true;
+    updateColorFilter();
+}
+
+function updateVisibleRowCount() {
+    const visibleRows = document.querySelectorAll('.performance-table tbody tr[style=""], .performance-table tbody tr:not([style*="none"])').length;
+    const totalRows = document.querySelectorAll('.performance-table tbody tr').length;
+    
+    // Update results header to show filtered count
+    const resultsHeader = document.querySelector('.results-header h3');
+    if (resultsHeader) {
+        const originalText = resultsHeader.textContent;
+        const baseText = originalText.split('(')[0].trim();
+        resultsHeader.textContent = `${baseText} (${visibleRows} of ${totalRows} schools shown)`;
+    }
+}
     function toggleView(viewType, buttonElement) {
         document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
         buttonElement.classList.add('active');
@@ -1034,63 +1406,177 @@ schools.forEach(school => {
     }
 
     function updateTableView() {
-        const selectedGroup = document.querySelector('input[name="studentGroup"]:checked').value;
-        const schools = window.currentSchools;
-        const indicators = window.currentIndicators;
-        if (schools && indicators) {
-            document.getElementById('tableView').innerHTML = generateTableView(schools, indicators, selectedGroup);
-        }
+    const selectedGroup = document.querySelector('input[name="studentGroup"]:checked').value;
+    const schools = window.currentSchools;
+    const indicators = window.currentIndicators;
+    if (schools && indicators) {
+        document.getElementById('tableView').innerHTML = generateTableView(schools, indicators, selectedGroup);
+        // Reapply color filters after table regeneration
+        updateColorFilter();
     }
+}
+
 
     function generateTableView(schools, indicators, selectedGroup) {
-        window.currentSchools = schools; // Cache for updates
-        window.currentIndicators = indicators;
+    window.currentSchools = schools; // Cache for updates
+    window.currentIndicators = indicators;
 
-        let tableHtml = '<table><thead><tr><th>School</th>';
-        indicators.forEach(indicator => tableHtml += `<th>${formatIndicatorLabel(indicator)}</th>`);
-        tableHtml += '</tr></thead><tbody>';
+    let tableHtml = '<table><thead><tr><th>School</th>';
+    indicators.forEach(indicator => tableHtml += `<th>${formatIndicatorLabel(indicator)}</th>`);
+    tableHtml += '</tr></thead><tbody>';
 
-        schools.slice(0, 50).forEach(school => {
-            tableHtml += `<tr><td class="school-name-cell">${school.school_name}</td>`;
-            indicators.forEach(indicator => {
-                let data = (selectedGroup === 'ALL')
-                    ? (school.dashboard_indicators || {})[indicator]
-                    : ((school.student_groups || {})[selectedGroup] || {})[indicator];
+    schools.slice(0, 50).forEach(school => {
+        tableHtml += `<tr><td class="school-name-cell">${school.school_name}</td>`;
+        indicators.forEach(indicator => {
+            let data = (selectedGroup === 'ALL')
+                ? (school.dashboard_indicators || {})[indicator]
+                : ((school.student_groups || {})[selectedGroup] || {})[indicator];
 
-                const status = data?.status || 'No Data';
-                const value = data?.rate ?? data?.points_below_standard;
-                const displayStatus = status.replace(/\\s/g, '-');
-                const tooltip = data ? formatTooltip(indicator, status, value || 0) : 'No data available';
-                tableHtml += `<td><div class="color-cell ${displayStatus}" title="${tooltip}">${status}</div></td>`;
-            });
-            tableHtml += '</tr>';
+            const status = data?.status || 'No Data';
+            const value = data?.rate ?? data?.points_below_standard ?? 0;
+            const change = data?.change || 0;
+            
+            const displayStatus = status.replace(/\s/g, '-');
+            const tooltip = data ? formatTooltip(indicator, status, value, change) : 'No data available';
+            
+            // Generate trend arrow and change text
+            const trendInfo = formatTrendInfo(indicator, change);
+            
+            // Generate performance value display (like "3 points above standard")
+            const performanceValue = formatPerformanceValue(indicator, value);
+            
+            tableHtml += `<td>
+                <div class="performance-cell">
+                    <div class="color-cell ${displayStatus}" title="${tooltip}">${status}</div>
+                    <div class="performance-value">${performanceValue}</div>
+                    <div class="trend-info">${trendInfo}</div>
+                </div>
+            </td>`;
         });
+        tableHtml += '</tr>';
+    });
 
-        tableHtml += '</tbody></table>';
-        if (schools.length > 50) {
-            tableHtml += `<p class="results-footer">Showing first 50 of ${schools.length} total results.</p>`;
-        }
-        return tableHtml;
+    tableHtml += '</tbody></table>';
+    if (schools.length > 50) {
+        tableHtml += `<p class="results-footer">Showing first 50 of ${schools.length} total results.</p>`;
     }
+    return tableHtml;
+}
 
-    // --- Formatting Helpers ---
-    function formatIndicatorLabel(indicator) {
-        const labels = {'chronic_absenteeism': 'Attendance', 'ela_performance': 'ELA', 'math_performance': 'Math', 'suspension_rate': 'Suspension'};
-        return labels[indicator] || indicator.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase());
+function formatPerformanceValue(indicator, value) {
+    if (!value && value !== 0) {
+        return '<span class="performance-na">--</span>';
     }
-
-    function getStudentGroupName(short_code) {
-        const map = {'ALL':'All Students','AA':'Black/African American','AI':'American Indian','AS':'Asian','FI':'Filipino','HI':'Hispanic/Latino','PI':'Pacific Islander','WH':'White','MR':'Two or More Races','EL':'English Learners','SED':'Socioeconomically Disadvantaged','SWD':'Students with Disabilities','HOM':'Homeless','FOS':'Foster Youth'};
-        return map[short_code] || short_code;
+    
+    if (indicator.includes('performance')) {
+        // For ELA/Math: Show distance from standard
+        const absValue = Math.abs(value);
+        const direction = value >= 0 ? 'above' : 'below';
+        const colorClass = value >= 0 ? 'performance-above' : 'performance-below';
+        
+        return `<span class="${colorClass}">${absValue.toFixed(1)} pts ${direction}</span>`;
+    } else {
+        // For percentage indicators: Show the rate
+        return `<span class="performance-rate">${value.toFixed(1)}%</span>`;
     }
+}
 
-    function formatTooltip(indicator, status, value) {
+function formatTrendInfo(indicator, change) {
+    if (!change || change === 0) {
+        return '<span class="trend-stable">➡️ --</span>';
+    }
+    
+    const absChange = Math.abs(change);
+    let arrow, changeText, cssClass;
+    
+    // Arrow direction is always based on actual change direction
+    if (change > 0) {
+        arrow = '↗️';
+        changeText = `+${absChange.toFixed(1)}`;
+    } else {
+        arrow = '↘️';
+        changeText = `-${absChange.toFixed(1)}`;
+    }
+    
+    // Add units based on indicator type
+    if (indicator.includes('performance')) {
+        changeText += 'pts';
+    } else {
+        changeText += '%';
+    }
+    
+    // Color is based on whether the change is GOOD or BAD for that indicator
+    if (indicator === 'chronic_absenteeism' || indicator === 'suspension_rate') {
+        // For these indicators: decrease = good, increase = bad
+        cssClass = (change < 0) ? 'trend-good' : 'trend-bad';
+    } else {
+        // For graduation, college_career, english_learner_progress, and performance: increase = good, decrease = bad
+        cssClass = (change > 0) ? 'trend-good' : 'trend-bad';
+    }
+    
+    return `<span class="${cssClass}">${arrow} ${changeText}</span>`;
+}
+
+function formatTooltip(indicator, status, value, change) {
+    let tooltip = '';
+    
+    if (indicator.includes('performance')) {
+        const direction = value >= 0 ? 'above' : 'below';
+        tooltip = `${status}: ${Math.abs(value).toFixed(1)} points ${direction} standard`;
+    } else {
+        tooltip = `${status}: ${value.toFixed(1)}%`;
+    }
+    
+    // Add change information to tooltip
+    if (change && change !== 0) {
+        const changeDirection = change > 0 ? 'increased' : 'decreased';
+        const changeAmount = Math.abs(change).toFixed(1);
+        
         if (indicator.includes('performance')) {
-            const direction = value >= 0 ? 'above' : 'below';
-            return `${status}: ${Math.abs(value).toFixed(1)} points ${direction} standard`;
+            tooltip += ` | Change: ${changeDirection} by ${changeAmount} points`;
+        } else {
+            tooltip += ` | Change: ${changeDirection} by ${changeAmount}%`;
         }
-        return `${status}: ${value.toFixed(1)}%`;
     }
+    
+    return tooltip;
+}
+
+// Keep your existing helper functions - they're still needed!
+function formatIndicatorLabel(indicator) {
+    const labels = {
+        'chronic_absenteeism': 'Attendance', 
+        'ela_performance': 'ELA', 
+        'math_performance': 'Math', 
+        'suspension_rate': 'Suspension',
+        'college_career': 'College/Career',
+        'graduation_rate': 'Graduation',
+        'english_learner_progress': 'EL Progress'
+    };
+    return labels[indicator] || indicator.replace(/_/g, ' ').replace(/\b\\w/g, l => l.toUpperCase());
+}
+
+function getStudentGroupName(short_code) {
+    const map = {
+        'ALL': 'All Students',
+        'AA': 'Black/African American',
+        'AI': 'American Indian',
+        'AS': 'Asian',
+        'FI': 'Filipino',
+        'HI': 'Hispanic/Latino',
+        'PI': 'Pacific Islander',
+        'WH': 'White',
+        'MR': 'Two or More Races',
+        'EL': 'English Learners',
+        'LTEL': 'Long-Term English Learners',
+        'RFEP': 'Reclassified Fluent English Proficient',
+        'SED': 'Socioeconomically Disadvantaged',
+        'SWD': 'Students with Disabilities',
+        'HOM': 'Homeless',
+        'FOS': 'Foster Youth'
+    };
+    return map[short_code] || short_code;
+}
 
     </script>
 </body>
@@ -1159,4 +1645,4 @@ def handle_query():
 if __name__ == '__main__':
     # Use environment variable for port, default to 8080
     port = int(os.environ.get("PORT", 8080))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)
