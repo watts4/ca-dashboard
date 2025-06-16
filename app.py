@@ -1515,9 +1515,7 @@ body {
                   <h3>📊 School Performance Results (${schools.length} schools)</h3>
                 </div>`;
     
-    html += `<div class="view-toggle">
-                <button class="active" data-view="table">Table View</button>
-             </div>`;
+    
 
     // New Collapsible Filter System
     html += '<div class="filter-system">';
