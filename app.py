@@ -804,6 +804,35 @@ body {
     display: none;
 }
 
+/* Student Group Grid - Fixed Layout */
+.student-group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.student-group-grid label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.student-group-grid label:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+}
+
+.student-group-grid input[type="radio"] {
+    margin: 0;
+}
+
 /* Modern Color Filter Grid */
 .color-filter-grid {
     display: grid;
@@ -837,9 +866,39 @@ body {
 }
 
 .color-sample {
-    font-size: 18px;
+    font-size: 13px;
     font-weight: 600;
     min-width: 80px;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+/* Color samples matching table style */
+.color-sample.blue-sample {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+    color: white;
+}
+
+.color-sample.green-sample {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
+    color: white;
+}
+
+.color-sample.yellow-sample {
+    background: linear-gradient(135deg, #ffd54f, #ffb300);
+    color: #1a1a1a;
+}
+
+.color-sample.orange-sample {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+}
+
+.color-sample.red-sample {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    color: white;
 }
 
 .color-description {
@@ -856,6 +915,7 @@ body {
     flex-wrap: wrap;
     padding-top: 16px;
     border-top: 1px solid #f1f5f9;
+    justify-content: flex-end;
 }
 
 .filter-action-btn {
@@ -878,12 +938,24 @@ body {
 }
 
 .problems-btn {
+    background: #fff;
+    border-color: #e2e8f0;
+    color: #1e293b;
+}
+
+.problems-btn.active {
     background: linear-gradient(135deg, #fef3c7, #fde68a);
     border-color: #f59e0b;
     color: #92400e;
 }
 
 .problems-btn:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.problems-btn.active:hover {
     background: linear-gradient(135deg, #fde68a, #fcd34d);
     border-color: #d97706;
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
@@ -1642,7 +1714,7 @@ function updateVisibleRowCount() {
             const value = data?.rate ?? data?.points_below_standard ?? 0;
             const change = data?.change || 0;
             
-            const displayStatus = status.replace(/\s/g, '-');
+            const displayStatus = status.replace(/\\s/g, '-');
             const tooltip = data ? formatTooltip(indicator, status, value, change) : 'No data available';
             
             // Generate trend arrow and change text
@@ -1759,7 +1831,7 @@ function formatIndicatorLabel(indicator) {
         'graduation_rate': 'Graduation',
         'english_learner_progress': 'EL Progress'
     };
-    return labels[indicator] || indicator.replace(/_/g, ' ').replace(/\b\\w/g, l => l.toUpperCase());
+    return labels[indicator] || indicator.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase());
 }
 
 function getStudentGroupName(short_code) {
