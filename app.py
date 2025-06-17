@@ -630,12 +630,10 @@ body {
 }
 
 .tab-content {
-    flex-grow: 2;
+    flex-grow: 1;
     overflow-y: auto;
     padding: 32px;
-    padding-top: 32px;
     display: none;
-    overflow-x: hidden;
 }
 
 .tab-content.active {
@@ -1430,7 +1428,8 @@ body {
             // Handle results
             if (data.schools && data.schools.length > 0) {
                 showResults(data.schools);
-                // Don't auto-switch - let user manually go to results
+                // Auto-switch to results tab when we get data
+                switchTab('results');
             } else {
                 // Clear results if no schools found
                 showEmptyResults();
@@ -1516,7 +1515,9 @@ body {
                   <h3>📊 School Performance Results (${schools.length} schools)</h3>
                 </div>`;
     
-
+    html += `<div class="view-toggle">
+                <button class="active" data-view="table">Table View</button>
+             </div>`;
 
     // New Collapsible Filter System
     html += '<div class="filter-system">';
@@ -1529,7 +1530,7 @@ body {
                 <span class="filter-title">👥 Student Groups</span>
                 <span class="filter-arrow" id="studentGroupsArrow">▼</span>
             </div>
-            <div class="filter-content collapsed" id="studentGroupsContent">
+            <div class="filter-content" id="studentGroupsContent">
                 <div class="student-group-grid">`;
         
         studentGroups.forEach(group => {
@@ -1553,27 +1554,27 @@ body {
             <div class="color-filter-grid">
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Blue" onchange="updateColorFilter()">
-                    <span class="color-sample blue-sample"> Blue</span>
+                    <span class="color-sample blue-sample">🔵 Blue</span>
                     <span class="color-description">Highest Performance</span>
                 </label>
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Green" onchange="updateColorFilter()">
-                    <span class="color-sample green-sample"> Green</span>
+                    <span class="color-sample green-sample">🟢 Green</span>
                     <span class="color-description">Above Average</span>
                 </label>
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Yellow" onchange="updateColorFilter()">
-                    <span class="color-sample yellow-sample"> Yellow</span>
+                    <span class="color-sample yellow-sample">🟡 Yellow</span>
                     <span class="color-description">Average Performance</span>
                 </label>
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Orange" onchange="updateColorFilter()">
-                    <span class="color-sample orange-sample"> Orange</span>
+                    <span class="color-sample orange-sample">🟠 Orange</span>
                     <span class="color-description">Below Average</span>
                 </label>
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Red" onchange="updateColorFilter()">
-                    <span class="color-sample red-sample"> Red</span>
+                    <span class="color-sample red-sample">🔴 Red</span>
                     <span class="color-description">Lowest Performance</span>
                 </label>
             </div>
