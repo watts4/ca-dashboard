@@ -630,10 +630,12 @@ body {
 }
 
 .tab-content {
-    flex-grow: 1;
+    flex-grow: 2;
     overflow-y: auto;
     padding: 32px;
+    padding-top: 32px;
     display: none;
+    overflow-x: hidden;
 }
 
 .tab-content.active {
@@ -746,6 +748,53 @@ body {
     font-weight: 600; 
     color: #1e293b;
     font-size: 1.3em;
+}
+/* Dropdown Controls CSS */
+.dropdown-controls {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.dropdown-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 200px;
+}
+
+.dropdown-group label {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dropdown-group select {
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+}
+
+.dropdown-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.dropdown-group select:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
 }
 
 /* Modern Filter System */
@@ -1181,6 +1230,16 @@ body {
         padding: 10px;
     }
     
+    .dropdown-controls {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .dropdown-group {
+        min-width: unset;
+        width: 100%;
+    }
+    
     .container {
         height: calc(100vh - 20px);
         border-radius: 16px;
@@ -1228,6 +1287,7 @@ body {
         font-size: 13px;
     }
 }
+
     </style>
 </head>
 <body>
@@ -1425,11 +1485,19 @@ body {
             
             addMessage(data.response, 'ai');
             
+            // Store the searched district for dropdown selection
+            window.lastSearchedDistrict = data.searched_district;
+
+            // Clear any previous district selection when a new search is made
+            const districtSelect = document.getElementById('districtSelect');
+            if (districtSelect) {
+            districtSelect.value = ''; // Reset to "All Districts"
+}
+            
             // Handle results
             if (data.schools && data.schools.length > 0) {
                 showResults(data.schools);
-                // Auto-switch to results tab when we get data
-                switchTab('results');
+                // Don't auto-switch - let user manually go to results
             } else {
                 // Clear results if no schools found
                 showEmptyResults();
@@ -1476,6 +1544,7 @@ body {
         document.getElementById('resultsContent').style.display = 'none';
         currentSchoolCount = 0;
         updateTabBadges();
+       
     }
 
     function showResults(schools) {
@@ -1511,11 +1580,25 @@ body {
     const indicators = Array.from(allIndicators);
     const studentGroups = Array.from(allStudentGroups);
     
-    let html = `<div class="results-header">
-                  <h3>📊 School Performance Results (${schools.length} schools)</h3>
-                </div>`;
+let html = `<div class="results-header">
+              <h3>📊 School Performance Results (${schools.length} schools)</h3>
+              <div class="dropdown-controls">
+                  <div class="dropdown-group">
+                      <label for="districtSelect">District:</label>
+                      <select id="districtSelect" onchange="handleDistrictChange()">
+                          <option value="">All Districts</option>
+                      </select>
+                  </div>
+                  <div class="dropdown-group">
+                      <label for="schoolSelect">School:</label>
+                      <select id="schoolSelect" onchange="filterByDropdowns()">
+                          <option value="">All Schools</option>
+                      </select>
+                  </div>
+              </div>
+            </div>`;
     
-    
+
 
     // New Collapsible Filter System
     html += '<div class="filter-system">';
@@ -1528,7 +1611,7 @@ body {
                 <span class="filter-title">👥 Student Groups</span>
                 <span class="filter-arrow" id="studentGroupsArrow">▼</span>
             </div>
-            <div class="filter-content" id="studentGroupsContent">
+            <div class="filter-content collapsed" id="studentGroupsContent">
                 <div class="student-group-grid">`;
         
         studentGroups.forEach(group => {
@@ -1588,11 +1671,13 @@ body {
     
     html += `<div id="tableView" class="performance-table">${generateTableView(schools, indicators, 'ALL')}</div>`;
     
-    resultsContent.innerHTML = html;
+resultsContent.innerHTML = html;
     console.log('DEBUG - HTML injected successfully');
     
+    populateDropdowns(schools, window.lastSearchedDistrict);
     updateTabBadges();
 }
+
 // Toggle filter section open/closed
 function toggleFilterSection(sectionId) {
     const content = document.getElementById(sectionId + 'Content');
@@ -1854,6 +1939,192 @@ function getStudentGroupName(short_code) {
     return map[short_code] || short_code;
 }
 
+// Dropdown menu functions
+function populateDropdowns(schools, selectedDistrict = null) {
+    // Build school data from current results (for school dropdown)
+    const schoolsByDistrict = {};
+    
+    schools.forEach(school => {
+        const district = school.district_name || 'Unknown District';
+        const schoolName = school.school_name || district;
+        
+        if (!schoolsByDistrict[district]) {
+            schoolsByDistrict[district] = new Set();
+        }
+        schoolsByDistrict[district].add(schoolName);
+    });
+    
+    // Get ALL districts by making a separate API call
+    fetch('/districts')
+        .then(response => response.json())
+        .then(allDistricts => {
+            const districtSelect = document.getElementById('districtSelect');
+            const schoolSelect = document.getElementById('schoolSelect');
+            
+            if (districtSelect && schoolSelect) {
+                districtSelect.innerHTML = '<option value="">All Districts</option>';
+                
+                // Sort and add all districts
+                allDistricts.sort().forEach(district => {
+                    const selected = (selectedDistrict && district.toLowerCase().includes(selectedDistrict.toLowerCase())) ? 'selected' : '';
+                    districtSelect.innerHTML += `<option value="${district}" ${selected}>${district}</option>`;
+                });
+                
+                // Populate schools based on selected district
+                updateSchoolDropdown(schoolsByDistrict, districtSelect.value);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading districts:', error);
+            // Fallback to using districts from current results
+            const districts = new Set();
+            schools.forEach(school => {
+                const district = school.district_name || 'Unknown District';
+                districts.add(district);
+            });
+            
+            const districtSelect = document.getElementById('districtSelect');
+            if (districtSelect) {
+                districtSelect.innerHTML = '<option value="">All Districts</option>';
+                Array.from(districts).sort().forEach(district => {
+                    const selected = (selectedDistrict && district.toLowerCase().includes(selectedDistrict.toLowerCase())) ? 'selected' : '';
+                    districtSelect.innerHTML += `<option value="${district}" ${selected}>${district}</option>`;
+                });
+            }
+        });
+}
+    
+function updateSchoolDropdown(schoolsByDistrict, selectedDistrict) {
+    const schoolSelect = document.getElementById('schoolSelect');
+    if (!schoolSelect) return;
+    
+    schoolSelect.innerHTML = '<option value="">All Schools</option>';
+    
+    if (selectedDistrict && schoolsByDistrict[selectedDistrict]) {
+        Array.from(schoolsByDistrict[selectedDistrict]).sort().forEach(school => {
+            schoolSelect.innerHTML += `<option value="${school}">${school}</option>`;
+        });
+    } else {
+        // Show all schools if no district selected
+        const allSchools = new Set();
+        Object.values(schoolsByDistrict).forEach(schoolSet => {
+            schoolSet.forEach(school => allSchools.add(school));
+        });
+        Array.from(allSchools).sort().forEach(school => {
+            schoolSelect.innerHTML += `<option value="${school}">${school}</option>`;
+        });
+    }
+}
+
+function filterByDropdowns() {
+    const selectedDistrict = document.getElementById('districtSelect').value;
+    const selectedSchool = document.getElementById('schoolSelect').value;
+    const tableRows = document.querySelectorAll('.performance-table tbody tr');
+    
+    tableRows.forEach(row => {
+        let shouldShow = true;
+        const schoolNameCell = row.querySelector('.school-name-cell');
+        
+        if (schoolNameCell) {
+            const schoolText = schoolNameCell.textContent.trim();
+            
+            // Get the school data to check district
+            const schools = window.currentSchools || [];
+            const matchingSchool = schools.find(s => 
+                (s.school_name || s.district_name) === schoolText
+            );
+            
+            if (selectedDistrict && matchingSchool) {
+                if (!matchingSchool.district_name || !matchingSchool.district_name.includes(selectedDistrict)) {
+                    shouldShow = false;
+                }
+            }
+            
+            if (selectedSchool && schoolText !== selectedSchool) {
+                shouldShow = false;
+            }
+        }
+        
+        row.style.display = shouldShow ? '' : 'none';
+    });
+    
+    updateVisibleRowCount();
+}
+
+function handleDistrictChange() {
+    const selectedDistrict = document.getElementById('districtSelect').value;
+    
+    if (!selectedDistrict) {
+        // If "All Districts" is selected, show all schools from current results
+        const schools = window.currentSchools || [];
+        const schoolsByDistrict = {};
+        
+        schools.forEach(school => {
+            const district = school.district_name || 'Unknown District';
+            const schoolName = school.school_name || district;
+            
+            if (!schoolsByDistrict[district]) {
+                schoolsByDistrict[district] = new Set();
+            }
+            schoolsByDistrict[district].add(schoolName);
+        });
+        
+        updateSchoolDropdown(schoolsByDistrict, selectedDistrict);
+        filterByDropdowns();
+        return;
+    }
+    
+    // Fetch fresh data for the selected district
+    fetch('/district-schools', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({district_name: selectedDistrict})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.schools) {
+            // Update the current schools data with new results
+            window.currentSchools = data.schools;
+            
+            // Update the table to show the new district's schools
+            const indicators = window.currentIndicators || [];
+            const selectedGroup = document.querySelector('input[name="studentGroup"]:checked')?.value || 'ALL';
+            document.getElementById('tableView').innerHTML = generateTableView(data.schools, indicators, selectedGroup);
+            
+            // Update school dropdown with schools from this district
+            const schoolsByDistrict = {};
+            data.schools.forEach(school => {
+                const district = school.district_name || 'Unknown District';
+                const schoolName = school.school_name || district;
+                
+                if (!schoolsByDistrict[district]) {
+                    schoolsByDistrict[district] = new Set();
+                }
+                schoolsByDistrict[district].add(schoolName);
+            });
+            
+            updateSchoolDropdown(schoolsByDistrict, selectedDistrict);
+            
+            // Update the results header count
+            const resultsHeader = document.querySelector('.results-header h3');
+            if (resultsHeader) {
+                resultsHeader.textContent = `📊 School Performance Results (${data.schools.length} schools)`;
+            }
+            
+            // Update the school count badge
+            currentSchoolCount = data.schools.length;
+            updateTabBadges();
+            
+            // Reapply any color filters
+            updateColorFilter();
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching district schools:', error);
+        // Fallback to filtering current results
+        filterByDropdowns();
+    });
+}
     </script>
 </body>
 </html>
@@ -1873,6 +2144,9 @@ def handle_query():
 
     # Use the appropriate parsing function
     parsed_query = parse_query_with_real_ai(user_query)
+    
+    # Store the searched district for frontend dropdown selection
+    searched_district = parsed_query.get("district_name") if parsed_query else None
     
     # If AI determined data is unavailable, return early
     if parsed_query and parsed_query.get("data_availability") == "not_available":
@@ -1916,8 +2190,43 @@ def handle_query():
     # Generate the final response
     response_text = generate_intelligent_response(user_query, results, parsed_query)
     
-    return jsonify({"response": response_text, "schools": results})
+    return jsonify({"response": response_text, "schools": results, "searched_district": searched_district})
 
+@app.route('/districts', methods=['GET'])
+def get_all_districts():
+    """Get all unique district names from the database"""
+    try:
+        # Get all unique district names
+        districts = schools_collection.distinct("district_name")
+        # Filter out null/empty values and sort
+        districts = [d for d in districts if d and d.strip()]
+        districts.sort()
+        return jsonify(districts)
+    except Exception as e:
+        print(f"Error getting districts: {e}")
+        return jsonify([]), 500
+
+@app.route('/district-schools', methods=['POST'])
+def get_district_schools():
+    """Get all schools for a specific district"""
+    try:
+        district_name = request.json.get('district_name')
+        if not district_name:
+            return jsonify({"error": "No district name provided"}), 400
+        
+        # Query for schools in the specified district
+        query = {"district_name": {"$regex": district_name, "$options": "i"}}
+        results = list(schools_collection.find(query).limit(100))
+        
+        # Convert ObjectId to string for JSON serialization
+        for item in results:
+            item['_id'] = str(item['_id'])
+        
+        return jsonify({"schools": results})
+    except Exception as e:
+        print(f"Error getting district schools: {e}")
+        return jsonify({"error": "Failed to fetch district schools"}), 500
+        
 if __name__ == '__main__':
     # Use environment variable for port, default to 8080
     port = int(os.environ.get("PORT", 8080))
