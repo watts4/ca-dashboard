@@ -1552,27 +1552,27 @@ body {
             <div class="color-filter-grid">
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Blue" onchange="updateColorFilter()">
-                    <span class="color-sample blue-sample">🔵 Blue</span>
+                    <span class="color-sample blue-sample"> Blue</span>
                     <span class="color-description">Highest Performance</span>
                 </label>
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Green" onchange="updateColorFilter()">
-                    <span class="color-sample green-sample">🟢 Green</span>
+                    <span class="color-sample green-sample"> Green</span>
                     <span class="color-description">Above Average</span>
                 </label>
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Yellow" onchange="updateColorFilter()">
-                    <span class="color-sample yellow-sample">🟡 Yellow</span>
+                    <span class="color-sample yellow-sample"> Yellow</span>
                     <span class="color-description">Average Performance</span>
                 </label>
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Orange" onchange="updateColorFilter()">
-                    <span class="color-sample orange-sample">🟠 Orange</span>
+                    <span class="color-sample orange-sample"> Orange</span>
                     <span class="color-description">Below Average</span>
                 </label>
                 <label class="color-filter-item">
                     <input type="checkbox" name="colorFilter" value="Red" onchange="updateColorFilter()">
-                    <span class="color-sample red-sample">🔴 Red</span>
+                    <span class="color-sample red-sample"> Red</span>
                     <span class="color-description">Lowest Performance</span>
                 </label>
             </div>
