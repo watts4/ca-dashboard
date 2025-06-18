@@ -520,6 +520,7 @@ body {
     flex-direction: column;
     height: calc(100vh - 40px);
     backdrop-filter: blur(10px);
+    position: relative;
 }
 
 .header { 
@@ -529,6 +530,8 @@ body {
     background: linear-gradient(135deg, #2196F3 0%, #1976D2 50%, #1565C0 100%);
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
+    min-height: 120px;
 }
 
 .header::before {
@@ -1224,6 +1227,152 @@ body {
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
 
+/* Pop-up Chat Button */
+#popupChatBtn {
+    padding: 16px 20px; 
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+    color: white; 
+    border: none; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    font-size: 18px; 
+    font-weight: 600; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    font-family: 'Inter', sans-serif;
+    min-width: 60px;
+}
+
+#popupChatBtn:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Pop-up Chat Window */
+.popup-chat-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: none;
+    pointer-events: none; /* Allow clicking through the overlay */
+
+}
+
+.popup-chat-window {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    height: 600px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    z-index: 1001;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    pointer-events: auto; /* Re-enable clicking on the chat window */
+}
+
+.popup-chat-header {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 50%, #1565C0 100%);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.popup-chat-title {
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.popup-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.popup-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+
+.popup-minimize-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.popup-chat-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.popup-chat-input {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f8fafc, #ffffff);
+    border-top: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.popup-input-container {
+    display: flex;
+    gap: 12px;
+}
+
+.popup-input-container input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    background: white;
+}
+
+.popup-input-container input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.popup-input-container button {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    font-family: 'Inter', sans-serif;
+}
+
+.popup-input-container button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     body {
@@ -1286,6 +1435,20 @@ body {
         padding: 12px 8px;
         font-size: 13px;
     }
+    
+    .popup-chat-window {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 40px);
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+    }
+    
+    #popupChatBtn {
+        padding: 14px 16px;
+        font-size: 16px;
+        min-width: 50px;
+    }
 }
 
     </style>
@@ -1332,20 +1495,40 @@ body {
             </div>
 
             <!-- Results Tab -->
-            <div class="tab-content" id="resultsTab">
-                <div class="empty-state" id="emptyResults">
-                    <h3>📊 No Results Yet</h3>
-                    <p>Ask a question or type a school or district to see dashboard indicator data</p>
+<div class="tab-content" id="resultsTab">
+    <div class="results-content" id="resultsContent">
+        <div class="results-header">
+            <h3>📊 School Performance Results</h3>
+            <div class="dropdown-controls">
+                <div class="dropdown-group">
+                    <label for="districtSelect">District:</label>
+                    <select id="districtSelect" onchange="handleDistrictChange()">
+                        <option value="">All Districts</option>
+                    </select>
                 </div>
-                <div class="results-content" id="resultsContent" style="display: none;"></div>
+                <div class="dropdown-group">
+                    <label for="schoolSelect">School:</label>
+                    <select id="schoolSelect" onchange="filterByDropdowns()">
+                        <option value="">All Schools</option>
+                    </select>
+                </div>
             </div>
+        </div>
+        <div class="empty-state" id="emptyResults">
+            <h3>🔍 Select a District and School</h3>
+            <p>Choose from the dropdowns above to explore California school dashboard data</p>
+        </div>
+        <div id="dynamicContent" style="display: none;"></div>
+    </div>
+</div>
         </div>
 
         <!-- Input Section - Always Visible -->
         <div class="input-section">
             <div class="input-container">
-                <input id="queryInput" type="text" placeholder="What California school or district do you want to learn about...">
+                  <input id="queryInput" type="text" placeholder="What California school or district do you want to learn about...">
                 <button id="sendQueryBtn">Ask</button>
+                 <button id="popupChatBtn" title="Open Chat">💬</button>
             </div>
         </div>
     </div>
@@ -1365,6 +1548,7 @@ body {
         const sendQueryBtn = document.getElementById('sendQueryBtn');
         const chatTab = document.getElementById('chatTab');
         const resultsTab = document.getElementById('resultsTab');
+        
 
         // Tab switching
         document.querySelectorAll('.tab-button').forEach(button => {
@@ -1416,7 +1600,47 @@ body {
                 }
             });
         }
+        
+        // Pop-up chat event listeners
+        const popupChatBtn = document.getElementById('popupChatBtn');
+        if (popupChatBtn) {
+            popupChatBtn.addEventListener('click', openPopupChat);
+        }
+        
+        const popupCloseBtn = document.getElementById('popupCloseBtn');
+        if (popupCloseBtn) {
+            popupCloseBtn.addEventListener('click', closePopupChat);
+        }
+        
+        // Remove the overlay click listener - we don't want to close on background click
+        
+        const popupSendBtn = document.getElementById('popupSendBtn');
+        if (popupSendBtn) {
+            popupSendBtn.addEventListener('click', sendPopupQuery);
+        }
+        
+        const popupQueryInput = document.getElementById('popupQueryInput');
+        if (popupQueryInput) {
+            popupQueryInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    sendPopupQuery();
+                }
+            });
+        }
+        
+        // Close popup with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closePopupChat();
+            }
+        });
+        
+        // Initialize dropdowns on page load
+        initializeDefaultDropdowns();
+ 
     });
+
 
     function switchTab(tabName) {
     // Update tab buttons
@@ -1537,6 +1761,7 @@ body {
         
         messageCount++;
         updateTabBadges();
+        syncChatContent(); // Sync with popup if open
     }
 
     function showEmptyResults() {
@@ -1580,28 +1805,18 @@ body {
     const indicators = Array.from(allIndicators);
     const studentGroups = Array.from(allStudentGroups);
     
-let html = `<div class="results-header">
-              <h3>📊 School Performance Results (${schools.length} schools)</h3>
-              <div class="dropdown-controls">
-                  <div class="dropdown-group">
-                      <label for="districtSelect">District:</label>
-                      <select id="districtSelect" onchange="handleDistrictChange()">
-                          <option value="">All Districts</option>
-                      </select>
-                  </div>
-                  <div class="dropdown-group">
-                      <label for="schoolSelect">School:</label>
-                      <select id="schoolSelect" onchange="filterByDropdowns()">
-                          <option value="">All Schools</option>
-                      </select>
-                  </div>
-              </div>
-            </div>`;
+// Update the existing header count instead of creating a new one
+    const existingHeader = document.querySelector('.results-header h3');
+    if (existingHeader) {
+        existingHeader.textContent = `📊 School Performance Results (${schools.length} schools)`;
+    }
+
+    let html = '';
     
 
 
     // New Collapsible Filter System
-    html += '<div class="filter-system">';
+    html = '<div class="filter-system">';
     
     // Student Groups Filter (Collapsible)
     if (studentGroups.length > 1) {
@@ -1671,7 +1886,12 @@ let html = `<div class="results-header">
     
     html += `<div id="tableView" class="performance-table">${generateTableView(schools, indicators, 'ALL')}</div>`;
     
-resultsContent.innerHTML = html;
+document.getElementById('dynamicContent').innerHTML = html;
+document.getElementById('dynamicContent').style.display = 'block';
+document.getElementById('emptyResults').style.display = 'none';
+
+// Update the dropdowns with the new data
+populateDropdowns(schools, window.lastSearchedDistrict);
     console.log('DEBUG - HTML injected successfully');
     
     populateDropdowns(schools, window.lastSearchedDistrict);
@@ -1939,21 +2159,28 @@ function getStudentGroupName(short_code) {
     return map[short_code] || short_code;
 }
 
+// Initialize dropdowns on page load
+function initializeDefaultDropdowns() {
+    // Load all districts immediately when page loads
+    fetch('/districts')
+        .then(response => response.json())
+        .then(allDistricts => {
+            const districtSelect = document.getElementById('districtSelect');
+            if (districtSelect) {
+                districtSelect.innerHTML = '<option value="">Select a District</option>';
+                allDistricts.sort().forEach(district => {
+                    districtSelect.innerHTML += `<option value="${district}">${district}</option>`;
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading districts on init:', error);
+        });
+}
+
+
 // Dropdown menu functions
 function populateDropdowns(schools, selectedDistrict = null) {
-    // Build school data from current results (for school dropdown)
-    const schoolsByDistrict = {};
-    
-    schools.forEach(school => {
-        const district = school.district_name || 'Unknown District';
-        const schoolName = school.school_name || district;
-        
-        if (!schoolsByDistrict[district]) {
-            schoolsByDistrict[district] = new Set();
-        }
-        schoolsByDistrict[district].add(schoolName);
-    });
-    
     // Get ALL districts by making a separate API call
     fetch('/districts')
         .then(response => response.json())
@@ -1970,13 +2197,43 @@ function populateDropdowns(schools, selectedDistrict = null) {
                     districtSelect.innerHTML += `<option value="${district}" ${selected}>${district}</option>`;
                 });
                 
-                // Populate schools based on selected district
-                updateSchoolDropdown(schoolsByDistrict, districtSelect.value);
+                // If a district is selected (from chat), fetch ALL schools for that district
+                if (selectedDistrict) {
+                    fetch('/district-schools', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({district_name: selectedDistrict})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.schools) {
+                            // Build school dropdown with ALL schools from the district
+                            const schoolsByDistrict = {};
+                            data.schools.forEach(school => {
+                                const district = school.district_name || 'Unknown District';
+                                const schoolName = school.school_name || district;
+                                
+                                if (!schoolsByDistrict[district]) {
+                                    schoolsByDistrict[district] = new Set();
+                                }
+                                schoolsByDistrict[district].add(schoolName);
+                            });
+                            
+                            updateSchoolDropdown(schoolsByDistrict, selectedDistrict);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading all schools for district:', error);
+                    });
+                } else {
+                    // No district selected, clear schools dropdown
+                    schoolSelect.innerHTML = '<option value="">All Schools</option>';
+                }
             }
         })
         .catch(error => {
             console.error('Error loading districts:', error);
-            // Fallback to using districts from current results
+            // Fallback to using districts from current results only if API fails
             const districts = new Set();
             schools.forEach(school => {
                 const district = school.district_name || 'Unknown District';
@@ -2055,22 +2312,19 @@ function handleDistrictChange() {
     const selectedDistrict = document.getElementById('districtSelect').value;
     
     if (!selectedDistrict) {
-        // If "All Districts" is selected, show all schools from current results
-        const schools = window.currentSchools || [];
-        const schoolsByDistrict = {};
+        // If no district selected, hide dynamic content and show empty state
+        document.getElementById('emptyResults').style.display = 'block';
+        document.getElementById('dynamicContent').style.display = 'none';
         
-        schools.forEach(school => {
-            const district = school.district_name || 'Unknown District';
-            const schoolName = school.school_name || district;
-            
-            if (!schoolsByDistrict[district]) {
-                schoolsByDistrict[district] = new Set();
-            }
-            schoolsByDistrict[district].add(schoolName);
-        });
+        // Reset school dropdown
+        const schoolSelect = document.getElementById('schoolSelect');
+        if (schoolSelect) {
+            schoolSelect.innerHTML = '<option value="">All Schools</option>';
+        }
         
-        updateSchoolDropdown(schoolsByDistrict, selectedDistrict);
-        filterByDropdowns();
+        // Reset count
+        currentSchoolCount = 0;
+        updateTabBadges();
         return;
     }
     
@@ -2082,16 +2336,11 @@ function handleDistrictChange() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.schools) {
-            // Update the current schools data with new results
+        if (data.schools && data.schools.length > 0) {
+            // Store the schools data
             window.currentSchools = data.schools;
             
-            // Update the table to show the new district's schools
-            const indicators = window.currentIndicators || [];
-            const selectedGroup = document.querySelector('input[name="studentGroup"]:checked')?.value || 'ALL';
-            document.getElementById('tableView').innerHTML = generateTableView(data.schools, indicators, selectedGroup);
-            
-            // Update school dropdown with schools from this district
+            // Build school dropdown
             const schoolsByDistrict = {};
             data.schools.forEach(school => {
                 const district = school.district_name || 'Unknown District';
@@ -2103,29 +2352,181 @@ function handleDistrictChange() {
                 schoolsByDistrict[district].add(schoolName);
             });
             
+            // Update school dropdown
             updateSchoolDropdown(schoolsByDistrict, selectedDistrict);
             
-            // Update the results header count
-            const resultsHeader = document.querySelector('.results-header h3');
-            if (resultsHeader) {
-                resultsHeader.textContent = `📊 School Performance Results (${data.schools.length} schools)`;
-            }
+            // Show the dynamic content area
+            showDynamicResults(data.schools);
             
-            // Update the school count badge
+            // Hide empty state
+            document.getElementById('emptyResults').style.display = 'none';
+            
+            // Update count
             currentSchoolCount = data.schools.length;
             updateTabBadges();
-            
-            // Reapply any color filters
-            updateColorFilter();
         }
     })
     .catch(error => {
         console.error('Error fetching district schools:', error);
-        // Fallback to filtering current results
-        filterByDropdowns();
     });
 }
+
+function showDynamicResults(schools) {
+    const allIndicators = new Set();
+    const allStudentGroups = new Set(['ALL']);
+    schools.forEach(school => {
+        Object.keys(school.dashboard_indicators || {}).forEach(ind => allIndicators.add(ind));
+        Object.keys(school.student_groups || {}).forEach(grp => allStudentGroups.add(grp));
+        Object.values(school.student_groups || {}).forEach(groupData => {
+            Object.keys(groupData || {}).forEach(ind => allIndicators.add(ind));
+        });
+    });
+    
+    const indicators = Array.from(allIndicators);
+    const studentGroups = Array.from(allStudentGroups);
+    
+    let html = '<div class="filter-system">';
+    
+    // Student Groups Filter (Collapsible)
+    if (studentGroups.length > 1) {
+        html += `
+        <div class="filter-section">
+            <div class="filter-header" onclick="toggleFilterSection('studentGroups')">
+                <span class="filter-title">👥 Student Groups</span>
+                <span class="filter-arrow" id="studentGroupsArrow">▼</span>
+            </div>
+            <div class="filter-content collapsed" id="studentGroupsContent">
+                <div class="student-group-grid">`;
+        
+        studentGroups.forEach(group => {
+            const checked = group === 'ALL' ? 'checked' : '';
+            html += `<label><input type="radio" name="studentGroup" value="${group}" ${checked}> ${getStudentGroupName(group)}</label>`;
+        });
+        
+        html += `    </div>
+            </div>
+        </div>`;
+    }
+    
+    // Performance Colors Filter (Collapsible)
+    html += `
+    <div class="filter-section">
+        <div class="filter-header" onclick="toggleFilterSection('performanceColors')">
+            <span class="filter-title">🎨 Performance Colors</span>
+            <span class="filter-arrow" id="performanceColorsArrow">▼</span>
+        </div>
+        <div class="filter-content collapsed" id="performanceColorsContent">
+            <div class="color-filter-grid">
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Blue" onchange="updateColorFilter()">
+                    <span class="color-sample blue-sample"> Blue</span>
+                    <span class="color-description">Highest Performance</span>
+                </label>
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Green" onchange="updateColorFilter()">
+                    <span class="color-sample green-sample"> Green</span>
+                    <span class="color-description">Above Average</span>
+                </label>
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Yellow" onchange="updateColorFilter()">
+                    <span class="color-sample yellow-sample"> Yellow</span>
+                    <span class="color-description">Average Performance</span>
+                </label>
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Orange" onchange="updateColorFilter()">
+                    <span class="color-sample orange-sample"> Orange</span>
+                    <span class="color-description">Below Average</span>
+                </label>
+                <label class="color-filter-item">
+                    <input type="checkbox" name="colorFilter" value="Red" onchange="updateColorFilter()">
+                    <span class="color-sample red-sample"> Red</span>
+                    <span class="color-description">Lowest Performance</span>
+                </label>
+            </div>
+            <div class="color-filter-actions">
+                <button onclick="selectAllColors()" class="filter-action-btn">Select All</button>
+                <button onclick="clearAllColors()" class="filter-action-btn">Clear All</button>
+                <button onclick="selectProblemsOnly()" class="filter-action-btn problems-btn">Problems Only (Red + Orange)</button>
+            </div>
+        </div>
+    </div>`;
+    
+    html += '</div>'; // End filter-system
+    
+    html += `<div id="tableView" class="performance-table">${generateTableView(schools, indicators, 'ALL')}</div>`;
+    
+    document.getElementById('dynamicContent').innerHTML = html;
+    document.getElementById('dynamicContent').style.display = 'block';
+    
+    // Store indicators for updates
+    window.currentIndicators = indicators;
+}
+
+// Pop-up Chat Functionality
+function openPopupChat() {
+    const overlay = document.getElementById('popupChatOverlay');
+    const popupContent = document.getElementById('popupChatContent');
+    const mainChatContainer = document.getElementById('chatContainer');
+    
+    // Sync chat content from main chat to popup
+    popupContent.innerHTML = mainChatContainer.innerHTML;
+    
+    // Show the popup
+    overlay.style.display = 'block';
+    
+    // Scroll to bottom
+    popupContent.scrollTop = popupContent.scrollHeight;
+}
+
+function closePopupChat() {
+    const overlay = document.getElementById('popupChatOverlay');
+    overlay.style.display = 'none';
+}
+
+function syncChatContent() {
+    // Sync content from main chat to popup if popup is open
+    const overlay = document.getElementById('popupChatOverlay');
+    if (overlay.style.display === 'block') {
+        const popupContent = document.getElementById('popupChatContent');
+        const mainChatContainer = document.getElementById('chatContainer');
+        
+        popupContent.innerHTML = mainChatContainer.innerHTML;
+        popupContent.scrollTop = popupContent.scrollHeight;
+    }
+}
+
+function sendPopupQuery() {
+    const popupInput = document.getElementById('popupQueryInput');
+    const query = popupInput.value.trim();
+    if (!query) return;
+    
+    // Set the main input and send query
+    document.getElementById('queryInput').value = query;
+    popupInput.value = '';
+    sendQuery();
+}
     </script>
+    
+    <!-- Pop-up Chat Overlay -->
+    <div class="popup-chat-overlay" id="popupChatOverlay">
+        <div class="popup-chat-window" onclick="event.stopPropagation()">
+            <div class="popup-chat-header">
+    <div class="popup-chat-title">
+        💬 Chat
+    </div>
+    <button class="popup-close-btn" id="popupCloseBtn">×</button>
+</div>
+            <div class="popup-chat-content" id="popupChatContent">
+                <!-- Chat messages will be synced here -->
+            </div>
+            <div class="popup-chat-input">
+                <div class="popup-input-container">
+                    <input id="popupQueryInput" type="text" placeholder="Ask a question...">
+                    <button id="popupSendBtn">Ask</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 '''
